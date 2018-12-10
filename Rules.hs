@@ -9,6 +9,12 @@ import           Development.Shake
 import           Development.Shake.Classes
 import           Development.Shake.Command
 
+newtype PsqlFileStdin =
+  PsqlFileStdin (String, FilePath, FilePath, [FilePath])
+  deriving (Show, Typeable, Eq, Hashable, Binary, NFData)
+
+type instance RuleResult PsqlFileStdin = ()
+
 newtype PsqlFile =
   PsqlFile (String, FilePath, [FilePath])
   deriving (Show, Typeable, Eq, Hashable, Binary, NFData)
@@ -61,3 +67,7 @@ loadShp2PgSql (Shp2PgSql (dbname, table, file, srid)) = do
 runPsqlFile (PsqlFile (dbName, sql, dep)) = do
     need $ sql : dep
     command_ [] "psql" ["-f", sql, "-v", "ON_ERROR_STOP=1", dbName]
+
+runPsqlFileStdin (PsqlFileStdin (dbName, sql, input, dep)) = do
+    need $ sql : input : dep
+    command_ [FileStdin input] "psql" ["-f", sql, "-v", "ON_ERROR_STOP=1", dbName]

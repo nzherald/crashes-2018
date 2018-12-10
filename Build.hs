@@ -28,20 +28,33 @@ svgCoastFile = "assets/coast.svg"
 main :: IO ()
 main = do
     (Config bld dbName) <- readConfig
+
     let coastShp = bld </> "nz-coastlines-topo-150k.shp"
+        crashData = bld </> "crash-data.csv"
         getConn  = connectPostgreSQL $ BS.pack $ "dbname=" ++ dbName
     shakeArgs shakeOptions { shakeFiles = bld } $ do
         db   <- addOracleCache addDb
         shp  <- addOracleCache loadShp2PgSql
         psql <- addOracleCache runPsqlFile
+        psqlin <- addOracleCache runPsqlFileStdin
 
         let hasDb = db $ Db dbName
 
-        want [webapp, generatedElm, playData, "gis", svgCoastFile]
+        want ["data"]
 
         "gis" ~> do
             hasDb
             shp $ Shp2PgSql (dbName, "coast", coastShp, "2193")
+
+        "data" ~> do
+            hasDb
+            need [crashData]
+            psqlin $ PsqlFileStdin (dbName, "data" </> "load-nzta-data.sql", crashData, [])
+
+        crashData %> \out -> do
+            let raw = "data" </> "crashes by severity and hour.csv"
+            need [raw]
+            command_ [FileStdout out] "iconv" ["-f", "ISO-8859-2", "-t", "UTF-8", raw]
 
         phony "clean" $ do
             putNormal "Cleaning files in _build"

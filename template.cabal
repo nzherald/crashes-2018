@@ -1,0 +1,32 @@
+name:                template
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/nzherald/template#readme
+license:             AllRightsReserved
+author:              New Zealand Herald
+maintainer:          chris.knox@nzherald.co.nz
+copyright:           2018 New Zealand Herald
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable build
+  main-is:             Build.hs
+  other-modules:       Rules
+                       Config
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5
+                     , shake
+                     , preparation
+                     , interpolate
+                     , aeson
+                     , bytestring
+                     , yaml
+                     , text
+                     , here
+                     , base16-bytestring
+                     , cryptohash-md5
+                     , svg-builder
+                     , postgresql-simple

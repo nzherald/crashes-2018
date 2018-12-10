@@ -1,0 +1,64 @@
+name:                preparation
+version:             0.1.0.0
+github:              "nzherald/template"
+license:             AllRightsReserved
+author:              "New Zealand Herald"
+maintainer:          "chris.knox@nzherald.co.nz"
+copyright:           "2018 New Zealand Herald"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/nzherald/template#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- aeson
+- bytestring
+- elm-bridge
+- random
+- text
+- postgresql-simple
+- lens
+- lens-aeson
+- svg-builder
+- formatting
+- interpolate
+- vector
+- megaparsec
+- parser-combinators
+
+
+library:
+  source-dirs: src
+
+executables:
+  preparation-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - preparation
+
+
+tests:
+  preparation-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - preparation

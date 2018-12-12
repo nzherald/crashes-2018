@@ -17,7 +17,7 @@ CREATE TEMP TABLE _load (
 \copy _load from pstdin with csv header
 
 CREATE TABLE crashes AS
-SELECT day, nullif(hour, 'Unknown')::integer as hour, severity, count
+SELECT day, nullif(hour, 'Unknown')::integer / 100 as hour, severity, count
 FROM _load
 ;
 

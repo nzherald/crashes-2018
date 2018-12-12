@@ -1,0 +1,75 @@
+---
+title: "Christmas crash data"
+output: html_notebook
+---
+
+I asked NZTA for data on the number of crashes each hour since 2000. Crashes are
+classified as Fatal, Serious injury, minor injury, and no injury.
+
+Initially I am interested in understanding what the variations in the various ratios
+of crash types over time - and during holiday periods.
+
+```{r, include=F}
+library(tidyverse)
+library(ggthemes)
+library(RPostgreSQL)
+library(zoo)
+library(lubridate)
+db <- dbConnect(PostgreSQL(), dbname='crashes-18')
+```
+
+```{r fig.height=20, message=FALSE, warning=FALSE}
+
+prev_xmas <- function(day) { ymd(paste(year(day) - 1, "12-24", sep='-'))}
+xmas <- function(day) { ymd(paste(year(day), "12-24", sep='-')) }
+jan_season <- function(day, hour, end) {
+  case_when(
+    yday(day) < end ~ prev_xmas(day),
+    yday(day) == end & hour < 6 ~ prev_xmas(day),
+    TRUE ~ xmas(day)
+  )
+}
+
+crashes <- tbl(db, "crashes") %>%
+  collect() %>%
+  mutate(xmasEve = case_when(
+      month(day) != 1 ~ xmas(day),
+      month(day) == 1 ~ case_when(
+        wday(prev_xmas(day)) %in% c(1,2,7) ~ jan_season(day, hour, 3),
+        wday(prev_xmas(day)) == 2 ~ jan_season(day, hour, 4),
+        TRUE ~ jan_season(day, hour, 5)
+      )
+    ),
+    christmas = case_when(
+      month(day) == 1 & year(day) != year(xmasEve) ~ TRUE,
+      month(day) == 12 & mday(day) > 24 ~ TRUE,
+      month(day) == 12 & mday(day) == 24 & hour >= 16 ~ TRUE,
+      TRUE ~ FALSE
+    ),
+    xmasYear = case_when(
+      month(day) <= 6 ~ year(day) - 1,
+      TRUE ~ year(day)
+    )
+  )
+
+christmas <- crashes %>%
+  group_by(xmasEve) %>%
+  summarise(fatal = sum(count[severity == 'Fatal' & !christmas])/sum(count[!christmas]),
+            xmas_fatal = sum(count[severity == 'Fatal' & christmas])/sum(count[christmas]),
+            fatal_severe = sum(count[severity %in% c('Fatal','Serious') & !christmas])/sum(count[!christmas]),
+            xmas_fatal_severe = sum(count[severity %in% c('Fatal','Serious') & christmas])/sum(count[christmas]),
+            ratio = xmas_fatal/fatal,
+            ratio_sev = xmas_fatal_severe/fatal_severe
+            )
+
+
+christmas2 <- crashes %>%
+  group_by(xmasYear) %>%
+  summarise(fatal = sum(count[severity == 'Fatal' & !christmas])/sum(count[!christmas]),
+            xmas_fatal = sum(count[severity == 'Fatal' & christmas])/sum(count[christmas]),
+            fatal_severe = sum(count[severity %in% c('Fatal','Serious') & !christmas])/sum(count[!christmas]),
+            xmas_fatal_severe = sum(count[severity %in% c('Fatal','Serious') & christmas])/sum(count[christmas]),
+            ratio = xmas_fatal/fatal,
+            ratio_sev = xmas_fatal_severe/fatal_severe
+            )
+```

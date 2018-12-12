@@ -67,3 +67,4 @@ dist
 elm-stuff
 .stack-work
 _build
+.Rproj.user

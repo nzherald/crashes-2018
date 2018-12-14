@@ -37,6 +37,9 @@ dependencies:
 - parser-combinators
 - time
 - cassava
+- pandoc
+- pandoc-types
+- mono-traversable
 
 
 library:

@@ -22,6 +22,7 @@ webapp = "interactive/dist/embed.js"
 webpackCli = "interactive/node_modules/.bin/webpack"
 generatedElm = "interactive/src/DataTypes.elm"
 playData = "interactive/static/play.json"
+articleText = "interactive/src/article.json"
 
 svgCoastFile = "assets/coast.svg"
 
@@ -42,11 +43,7 @@ main = do
 
         let hasDb = db $ Db dbName
 
-        want ["data", "data" </> "average-rainfall.csv"]
-
-        "gis" ~> do
-            hasDb
-            shp $ Shp2PgSql (dbName, "coast", coastShp, "2193")
+        want ["data", articleText, generatedElm]
 
         
         "data" </> "average-rainfall.csv" %> \out -> do
@@ -55,6 +52,13 @@ main = do
                 conn   <- getConn
                 d <- rainfall conn
                 BL.writeFile out $ encodeDefaultOrderedByName d
+
+        articleText %> \out -> do
+            let input = "text" </> "article.md"
+            need [input]
+            liftIO $ do
+                articleScrolly <- article input
+                BL.writeFile out $ encode articleScrolly
 
 
         "data" ~> do
@@ -103,16 +107,15 @@ main = do
             need deps
             liftIO $ dummyData out
 
-        coastShp %> unzip bld "gis/kx-nz-coastlines-topo-150k-SHP.zip"
         rainfallCsv %> unzip bld "data/mfe-rainfall-19602016-CSV.zip"
 
-        svgCoastFile %> \out -> do
-            deps <- getDirectoryFiles "" ["preparation//*.hs"]
-            need $ "gis" : deps
-            liftIO $ do
-                conn   <- getConn
-                coastD <- coast conn
-                TL.writeFile out $ prettyText $ svgCoast $ coastD
+        -- svgCoastFile %> \out -> do
+        --     deps <- getDirectoryFiles "" ["preparation//*.hs"]
+        --     need $ "gis" : deps
+        --     liftIO $ do
+        --         conn   <- getConn
+        --         coastD <- coast conn
+        --         TL.writeFile out $ prettyText $ svgCoast $ coastD
   where
     unzip bld z o = do
         need [z]

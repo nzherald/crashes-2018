@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 71d624993b12d8e127c4e2815cbfffadd53655ff245ce5ce191995c50aa538a3
+-- hash: 9e8aee50292190e8db0c95e649e7014173b8bac772f7eb073b9771b14b625c99
 
 name:           preparation
 version:        0.1.0.0
@@ -28,6 +28,9 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Scrolly
+      Types
+      TypeTH
   other-modules:
       Paths_preparation
   hs-source-dirs:
@@ -43,6 +46,9 @@ library
     , lens
     , lens-aeson
     , megaparsec
+    , mono-traversable
+    , pandoc
+    , pandoc-types
     , parser-combinators
     , postgresql-simple
     , random
@@ -70,6 +76,9 @@ executable preparation-exe
     , lens
     , lens-aeson
     , megaparsec
+    , mono-traversable
+    , pandoc
+    , pandoc-types
     , parser-combinators
     , postgresql-simple
     , preparation
@@ -99,6 +108,9 @@ test-suite preparation-test
     , lens
     , lens-aeson
     , megaparsec
+    , mono-traversable
+    , pandoc
+    , pandoc-types
     , parser-combinators
     , postgresql-simple
     , preparation

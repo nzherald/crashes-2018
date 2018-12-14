@@ -35,6 +35,8 @@ dependencies:
 - vector
 - megaparsec
 - parser-combinators
+- time
+- cassava
 
 
 library:

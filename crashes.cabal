@@ -30,3 +30,4 @@ executable build
                      , cryptohash-md5
                      , svg-builder
                      , postgresql-simple
+                     , cassava

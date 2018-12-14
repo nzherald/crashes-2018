@@ -15,6 +15,7 @@ library(ggthemes)
 library(RPostgreSQL)
 library(zoo)
 library(lubridate)
+library(here)
 db <- dbConnect(PostgreSQL(), dbname='crashes-18')
 ```
 
@@ -40,7 +41,7 @@ crashes <- tbl(db, "crashes") %>%
         TRUE ~ jan_season(day, hour, 5)
       )
     ),
-    christmas = case_when(
+    xmas = case_when(
       month(day) == 1 & year(day) != year(xmasEve) ~ TRUE,
       month(day) == 12 & mday(day) > 24 ~ TRUE,
       month(day) == 12 & mday(day) == 24 & hour >= 16 ~ TRUE,
@@ -54,10 +55,10 @@ crashes <- tbl(db, "crashes") %>%
 
 christmas <- crashes %>%
   group_by(xmasEve) %>%
-  summarise(fatal = sum(count[severity == 'Fatal' & !christmas])/sum(count[!christmas]),
-            xmas_fatal = sum(count[severity == 'Fatal' & christmas])/sum(count[christmas]),
-            fatal_severe = sum(count[severity %in% c('Fatal','Serious') & !christmas])/sum(count[!christmas]),
-            xmas_fatal_severe = sum(count[severity %in% c('Fatal','Serious') & christmas])/sum(count[christmas]),
+  summarise(fatal = sum(count[severity == 'Fatal' & !xmas])/sum(count[!xmas]),
+            xmas_fatal = sum(count[severity == 'Fatal' & xmas])/sum(count[xmas]),
+            fatal_severe = sum(count[severity %in% c('Fatal','Serious') & !xmas])/sum(count[!xmas]),
+            xmas_fatal_severe = sum(count[severity %in% c('Fatal','Serious') & xmas])/sum(count[xmas]),
             ratio = xmas_fatal/fatal,
             ratio_sev = xmas_fatal_severe/fatal_severe
             )
@@ -65,11 +66,48 @@ christmas <- crashes %>%
 
 christmas2 <- crashes %>%
   group_by(xmasYear) %>%
-  summarise(fatal = sum(count[severity == 'Fatal' & !christmas])/sum(count[!christmas]),
-            xmas_fatal = sum(count[severity == 'Fatal' & christmas])/sum(count[christmas]),
-            fatal_severe = sum(count[severity %in% c('Fatal','Serious') & !christmas])/sum(count[!christmas]),
-            xmas_fatal_severe = sum(count[severity %in% c('Fatal','Serious') & christmas])/sum(count[christmas]),
+  summarise(fatal = sum(count[severity == 'Fatal' & !xmas])/sum(count[!xmas]),
+            xmas_fatal = sum(count[severity == 'Fatal' & xmas])/sum(count[xmas]),
+            fatal_severe = sum(count[severity %in% c('Fatal','Serious') & !xmas])/sum(count[!xmas]),
+            xmas_fatal_severe = sum(count[severity %in% c('Fatal','Serious') & xmas])/sum(count[xmas]),
             ratio = xmas_fatal/fatal,
             ratio_sev = xmas_fatal_severe/fatal_severe
             )
+```
+
+Grab some rainfall data
+
+```{r}
+
+rainfall <- read_csv(here('data/average-rainfall.csv'))
+xmas_crashes <- crashes %>% filter(xmas)
+
+daily_rainfall <- rainfall %>% 
+  inner_join(xmas_crashes, by=("day")) %>%
+  add_count(xmasYear) %>%
+  group_by(day, rain, xmasYear,n) %>%
+  summarise(
+            fatal = sum(count[severity %in% c('Fatal')]),
+            serious = sum(count[severity == 'Serious']),
+            total = sum(count))
+
+
+```
+
+
+Look at progress through the year
+
+```{r}
+daily <- crashes %>% group_by(day,severity) %>% summarise(count=sum(count)) %>%
+  mutate(md=paste(month(day),mday(day),sep='-'))
+
+ydaily <- daily %>%
+  group_by(md,severity) %>%
+  summarise(average=mean(count), count=sum(count)) %>%
+  mutate(fakeDay=ymd(paste('2016',md,sep='-')))
+
+fd <- ydaily %>% group_by(fakeDay, severity) %>% summarise(average=mean(count))
+
+ggplot(fd, aes(fakeDay,average)) + geom_point() + facet_wrap(. ~ severity, scales = "free_y")
+
 ```

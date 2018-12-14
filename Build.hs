@@ -12,6 +12,7 @@ import qualified Data.ByteString.Char8         as BS
 import qualified Data.Text.Lazy.IO             as TL
 import           Database.PostgreSQL.Simple
 import           Graphics.Svg                             ( prettyText )
+import Data.Csv (encodeDefaultOrderedByName)
 
 import           Rules
 import           Lib
@@ -29,32 +30,46 @@ main :: IO ()
 main = do
     (Config bld dbName) <- readConfig
 
-    let coastShp = bld </> "nz-coastlines-topo-150k.shp"
-        crashData = bld </> "crash-data.csv"
-        getConn  = connectPostgreSQL $ BS.pack $ "dbname=" ++ dbName
+    let coastShp    = bld </> "nz-coastlines-topo-150k.shp"
+        crashData   = bld </> "crash-data.csv"
+        rainfallCsv = bld </> "rainfall-19602016.csv"
+        getConn     = connectPostgreSQL $ BS.pack $ "dbname=" ++ dbName
     shakeArgs shakeOptions { shakeFiles = bld } $ do
-        db   <- addOracleCache addDb
-        shp  <- addOracleCache loadShp2PgSql
-        psql <- addOracleCache runPsqlFile
+        db     <- addOracleCache addDb
+        shp    <- addOracleCache loadShp2PgSql
+        psql   <- addOracleCache runPsqlFile
         psqlin <- addOracleCache runPsqlFileStdin
 
         let hasDb = db $ Db dbName
 
-        want ["data"]
+        want ["data", "data" </> "average-rainfall.csv"]
 
         "gis" ~> do
             hasDb
             shp $ Shp2PgSql (dbName, "coast", coastShp, "2193")
 
+        
+        "data" </> "average-rainfall.csv" %> \out -> do
+            need ["data"]
+            liftIO $ do
+                conn   <- getConn
+                d <- rainfall conn
+                BL.writeFile out $ encodeDefaultOrderedByName d
+
+
         "data" ~> do
             hasDb
-            need [crashData]
-            psqlin $ PsqlFileStdin (dbName, "data" </> "load-nzta-data.sql", crashData, [])
+            psqlin $ PsqlFileStdin
+                (dbName, "data" </> "rainfall.sql", rainfallCsv, [])
+            psqlin $ PsqlFileStdin
+                (dbName, "data" </> "load-nzta-data.sql", crashData, [])
 
         crashData %> \out -> do
             let raw = "data" </> "crashes by severity and hour.csv"
             need [raw]
-            command_ [FileStdout out] "iconv" ["-f", "ISO-8859-2", "-t", "UTF-8", raw]
+            command_ [FileStdout out]
+                     "iconv"
+                     ["-f", "ISO-8859-2", "-t", "UTF-8", raw]
 
         phony "clean" $ do
             putNormal "Cleaning files in _build"
@@ -89,6 +104,7 @@ main = do
             liftIO $ dummyData out
 
         coastShp %> unzip bld "gis/kx-nz-coastlines-topo-150k-SHP.zip"
+        rainfallCsv %> unzip bld "data/mfe-rainfall-19602016-CSV.zip"
 
         svgCoastFile %> \out -> do
             deps <- getDirectoryFiles "" ["preparation//*.hs"]

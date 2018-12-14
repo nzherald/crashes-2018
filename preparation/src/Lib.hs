@@ -1,9 +1,9 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Lib
     ( genElm
@@ -11,57 +11,78 @@ module Lib
     , dummyData
     , svgCoast
     , coast
+    , rainfall
     ) where
 
-import Elm.Derive
-import Elm.Module
-import Data.Aeson hiding (defaultOptions)
-import Data.Aeson.Types hiding (defaultOptions)
-import qualified Data.ByteString.Lazy as BL
-import GHC.Generics
+import           Data.Aeson                      as A
+import           Data.Aeson.Types                as A 
+import qualified Data.ByteString.Lazy             as BL
+import           Elm.Derive as Elm
+import           Elm.Module
+import           GHC.Generics
 
-import           Graphics.Svg
-import qualified Data.Text                     as T
+import           Control.Lens
+import           Data.Text                        (Text)
+import qualified Data.Text                        as T
+import           Data.Time
+import qualified Data.Vector                      as V
+import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.SqlQQ
 import           Formatting
-import qualified Data.Vector                   as V
-import           Data.Text                                ( Text )
-import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.SqlQQ
+import           Graphics.Svg
+import qualified Data.ByteString.Char8 as BC8
+import Data.Csv as Csv
+
+import           Data.Proxy
+
+data Rainfall
+   = Rainfall
+   { _location :: Text
+   , _rain     :: Double
+   , _day      :: Day
+   } deriving (Show, Eq, Generic, FromRow)
+
+instance ToNamedRecord Rainfall where
+    toNamedRecord = genericToNamedRecord csvOptions
+  
+instance FromNamedRecord Rainfall where
+    parseNamedRecord = genericParseNamedRecord csvOptions
+  
+instance DefaultOrdered Rainfall where
+    headerOrder = genericHeaderOrder csvOptions
+
+instance FromField Day where
+    parseField = parseTimeM True defaultTimeLocale "%Y-%m-%d" . BC8.unpack
 
 
-import Data.Proxy
-
-data Foo
-   = Foo
-   { f_name :: String
-   , f_blablub :: Int
-   } deriving (Show, Eq, Generic)
+instance ToField Day where
+  toField = BC8.pack . formatTime defaultTimeLocale "%Y-%m-%d"
 
 data Coast
    = Coast
-   { co_width :: Double
+   { co_width  :: Double
    , co_height :: Double
-   , co_geom :: V.Vector Text
+   , co_geom   :: V.Vector Text
    } deriving (Show, Eq, Generic, FromRow)
 
-deriveBoth defaultOptions ''Foo
+
 
 genElm :: FilePath -> IO ()
 genElm fp =
     writeFile fp gen
-    
+
 echoElm :: IO ()
 echoElm = putStrLn gen
 
 dummyData :: FilePath -> IO ()
-dummyData fp = BL.writeFile fp $ encode $ Foo "Hello" 9
+dummyData fp = BL.writeFile fp $ A.encode $ Rainfall "Hello" 9 (read "2015-12-24")
 
 
 gen = makeElmModule "DataTypes"
-    [ DefineElm (Proxy :: Proxy Foo)
+    [ DefineElm (Proxy :: Proxy Rainfall)
     ]
 
-    
+
 svg :: Element -> Text -> Double -> Double -> Element
 svg content n x y = doctype <> with
     (svg11_ content)
@@ -83,8 +104,8 @@ svgCoast (Coast w h g) =
 coast :: Connection -> IO Coast
 coast conn = do
       c:_ <- query_ conn coastSql
-      return c 
-    
+      return c
+
 coastSql = [sql|
       WITH _e AS (
         SELECT st_extent(geom) as extent
@@ -98,9 +119,35 @@ coastSql = [sql|
         FROM coast
       )
       SELECT width,
-             height, 
+             height,
              array_agg(path)
       FROM _b, _g
       GROUP BY width, height
     ;
     |]
+
+rainfall :: Connection -> IO [Rainfall]
+rainfall conn = query_ conn rainfallSql
+
+rainfallSql = [sql|
+SELECT 'New Zealand', avg(rain), day
+FROM rainfall
+WHERE ((date_part('month', day) = 12 AND date_part('day', day) >= 24) 
+  OR (date_part('month', day) = 1 AND date_part('day', day) <= 5) )
+  AND day >= '2001-12-24'
+GROUP BY day
+
+|]
+
+
+csvOptions :: Csv.Options
+csvOptions = Csv.defaultOptions { Csv.fieldLabelModifier = rmUnderscore }
+  where
+    rmUnderscore ('_':str) = str
+    rmUnderscore str       = str
+
+
+
+
+deriveBoth Elm.defaultOptions ''Rainfall
+makeLenses ''Rainfall

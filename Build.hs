@@ -43,7 +43,7 @@ main = do
 
         let hasDb = db $ Db dbName
 
-        want ["data", articleText, generatedElm]
+        want [webapp]
 
         
         "data" </> "average-rainfall.csv" %> \out -> do
@@ -92,10 +92,12 @@ main = do
                 , "interactive/webpack.*"
                 , "interactive/yarn.lock"
                 ]
-            need $ [webpackCli] ++ deps
+            need $ ["data", articleText, generatedElm, webpackCli] ++ deps
             command_ [Cwd "interactive"] "npm" ["run", "build"]
 
-        webpackCli %> \_ -> command_ [Cwd "interactive"] "npm" ["i"]
+        webpackCli %> \out -> do
+            command_ [Cwd "interactive"] "npm" ["i"]
+            cmd_ $ "touch " ++ out
 
         generatedElm %> \out -> do
             deps <- getDirectoryFiles "" ["preparation//*.hs"]

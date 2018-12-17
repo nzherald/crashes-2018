@@ -1,10 +1,11 @@
-module Main exposing (Model, Msg(..), init, main, update, view)
+port module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import DataTypes exposing (..)
 import Html exposing (Html, div, h1, img, p, section, text)
-import Html.Attributes exposing (attribute, class, id, src)
+import Html.Attributes exposing (attribute, class, id, src, classList)
 import Http
+import Json.Encode as E
 import Markdown exposing (toHtml)
 
 
@@ -14,6 +15,8 @@ import Markdown exposing (toHtml)
 
 type alias Model =
     { article : List ScrollySection
+    , activeLabel : Maybe String
+    , activeStep : Int
     }
 
 
@@ -23,7 +26,7 @@ type alias Config =
 
 init : Config -> ( Model, Cmd Msg )
 init { article } =
-    ( Model article, Cmd.none )
+    ( Model article Nothing -1, Cmd.none )
 
 
 
@@ -32,6 +35,7 @@ init { article } =
 
 type Msg
     = DataLoad (Result Http.Error Int)
+    | Scroll ( String, Int )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -42,6 +46,9 @@ update msg model =
 
         DataLoad (Ok f) ->
             ( model, Cmd.none )
+
+        Scroll ( si, i ) ->
+            ( { model | activeStep = i, activeLabel = Just si }, Cmd.none )
 
 
 
@@ -54,6 +61,7 @@ view model =
         step i scrolly =
             toHtml
                 [ class "step"
+                , classList [("is-active", i == model.activeStep)]
                 , attribute "data-label" scrolly.label
                 , attribute "data-step" <| String.fromInt i
                 ]
@@ -62,7 +70,7 @@ view model =
     section [ id "scroll" ]
         [ div [ class "scroll__graphic sticky" ]
             [ div [ class "chart" ]
-                [ p [] [ text "0" ]
+                [ p [] [ Maybe.withDefault "hi" model.activeLabel |> text ]
                 ]
             ]
         , div [ class "scroll__text" ]
@@ -80,5 +88,13 @@ main =
         { view = view
         , init = init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch [ scroll Scroll ]
+
+
+port scroll : (( String, Int ) -> msg) -> Sub msg

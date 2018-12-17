@@ -23,11 +23,29 @@ trigger a scrolly article.
 
 After falling for several years New Zealand's road toll has started to rise again.
 
+While our road toll has fallen it remains high by international standards.
+
 ---
 
 # par two
 
-So what is going on?
+The _New Zealand Herald_ has analysed every hour since that start of 2000 to see
+when fatal and serious injury crashes occur.
 
-Who knows?
+---
 
+# New Year's Morning
+
+When each day is split into four six our blocks of time. Almost all 
+the periods of time where the most fatal and serious-injury crashes
+occur are from six in the evening until Midnight. However, once striking
+exception stands out - Midnight until 6 am on the first of January.
+
+---
+
+# Seasonal trends
+
+When we look at the average number of crashes that occur per day on any given day of
+the year the highest number of crashes per day occurs in Autumn.
+However, the highest number of fatal and serious-injury crashes per day are occurs in Summer.
+So in Summer we are crashing less often, but more of those crashes have severe outcomes.

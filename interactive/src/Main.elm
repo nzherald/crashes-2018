@@ -1,24 +1,29 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, img, text, section, p)
-import Html.Attributes exposing (src, attribute, id, class)
+import DataTypes exposing (..)
+import Html exposing (Html, div, h1, img, p, section, text)
+import Html.Attributes exposing (attribute, class, id, src)
 import Http
+import Markdown exposing (toHtml)
 
 
 
--- import DataTypes exposing (..)
 ---- MODEL ----
 
 
 type alias Model =
-    { dummy : Maybe Int
+    { article : List ScrollySection
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model Nothing, Cmd.none )
+type alias Config =
+    { article : List ScrollySection }
+
+
+init : Config -> ( Model, Cmd Msg )
+init { article } =
+    ( Model article, Cmd.none )
 
 
 
@@ -36,7 +41,7 @@ update msg model =
             ( model, Cmd.none )
 
         DataLoad (Ok f) ->
-            ( { model | dummy = Just f }, Cmd.none )
+            ( model, Cmd.none )
 
 
 
@@ -45,6 +50,15 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    let
+        step i scrolly =
+            toHtml
+                [ class "step"
+                , attribute "data-label" scrolly.label
+                , attribute "data-step" <| String.fromInt i
+                ]
+                scrolly.text
+    in
     section [ id "scroll" ]
         [ div [ class "scroll__graphic sticky" ]
             [ div [ class "chart" ]
@@ -52,19 +66,7 @@ view model =
                 ]
             ]
         , div [ class "scroll__text" ]
-            [ div [ class "step", attribute "data-step" "1" ]
-                [ p [] [ text "STEP 1" ]
-                ]
-            , div [ class "step", attribute "data-step" "2" ]
-                [ p [] [ text "STEP 2" ]
-                ]
-            , div [ class "step", attribute "data-step" "3" ]
-                [ p [] [ text "STEP 3" ]
-                ]
-            , div [ class "step", attribute "data-step" "4" ]
-                [ p [] [ text "STEP 4" ]
-                ]
-            ]
+            (List.indexedMap step model.article)
         ]
 
 
@@ -72,11 +74,11 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Config Model Msg
 main =
     Browser.element
         { view = view
-        , init = \_ -> init
+        , init = init
         , update = update
         , subscriptions = always Sub.none
         }

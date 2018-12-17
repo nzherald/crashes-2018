@@ -8,29 +8,6 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 
 
-type alias Rainfall  =
-   { location: String
-   , rain: Float
-   , day: Day
-   }
-
-jsonDecRainfall : Json.Decode.Decoder ( Rainfall )
-jsonDecRainfall =
-   Json.Decode.succeed (\plocation prain pday -> {location = plocation, rain = prain, day = pday})
-   |> required "location" (Json.Decode.string)
-   |> required "rain" (Json.Decode.float)
-   |> required "day" (jsonDecDay)
-
-jsonEncRainfall : Rainfall -> Value
-jsonEncRainfall  val =
-   Json.Encode.object
-   [ ("location", Json.Encode.string val.location)
-   , ("rain", Json.Encode.float val.rain)
-   , ("day", jsonEncDay val.day)
-   ]
-
-
-
 type alias ScrollySection  =
    { label: String
    , text: String

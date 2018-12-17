@@ -1,10 +1,13 @@
 import Stickyfill from 'stickyfilljs'
 import scrollama from 'scrollama'
 
-
 import "./base.less"
 import "./root.less"
 import {Elm} from "./Main.elm"
+
+import article from './article.json'
+
+console.log(article)
 
 const d3 = window.d3;
 
@@ -86,7 +89,8 @@ class Main {
     constructor () {
         document.getElementById('root').innerHTML = '<div id="elm"></div>'
         var app = Elm.Main.init({
-            node: document.getElementById('elm')
+            node: document.getElementById('elm'),
+            flags: { article }
           });
         this.fadeOut()
         initScrollama()

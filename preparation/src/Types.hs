@@ -51,8 +51,7 @@ instance ToField Day where
   toField = BC8.pack . formatTime defaultTimeLocale "%Y-%m-%d"
 
 gen = makeElmModule "DataTypes" 
-    [ DefineElm (Proxy :: Proxy Rainfall)
-    , DefineElm (Proxy :: Proxy ScrollySection)
+    [ DefineElm (Proxy :: Proxy ScrollySection)
     ]
 
 deriveBoth elmOptions ''Rainfall

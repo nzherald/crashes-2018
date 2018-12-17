@@ -50,7 +50,15 @@ crashes <- tbl(db, "crashes") %>%
     xmasYear = case_when(
       month(day) <= 6 ~ year(day) - 1,
       TRUE ~ year(day)
-    )
+    ),
+    period = case_when(
+      hour < 6 ~ 0,
+      hour >= 6 & hour < 12 ~ 1,
+      hour >= 12 & hour < 18 ~ 2,
+      hour >= 16 ~ 4,
+      TRUE ~ -1
+    ),
+    md = paste(month(day), mday(day), sep='-')
   )
 
 christmas <- crashes %>%

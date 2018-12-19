@@ -43,6 +43,16 @@ data ScrollyArticle
     , _outro :: [ScrollySection] 
     } deriving (Show, Eq)
 
+
+data Annual
+    = Annual
+    { _year :: Int
+    , _fatal :: Double
+    , _minor :: Double
+    , _nonInjury :: Double
+    , _serious :: Double
+    } deriving (Show, Eq, Generic, Csv.FromRecord)
+
 instance ToNamedRecord Rainfall where
     toNamedRecord = genericToNamedRecord csvOptions
 
@@ -61,11 +71,14 @@ instance ToField Day where
 gen = makeElmModule "DataTypes" 
     [ DefineElm (Proxy :: Proxy ScrollySection)
     , DefineElm (Proxy :: Proxy ScrollyArticle)
+    , DefineElm (Proxy :: Proxy Annual)
     ]
 
 deriveBoth elmOptions ''Rainfall
 deriveBoth elmOptions ''ScrollySection
 deriveBoth elmOptions ''ScrollyArticle
+deriveBoth elmOptions ''Annual
 makeFieldsNoPrefix ''Rainfall
 makeFieldsNoPrefix ''ScrollySection
 makeFieldsNoPrefix ''ScrollyArticle
+makeFieldsNoPrefix ''Annual

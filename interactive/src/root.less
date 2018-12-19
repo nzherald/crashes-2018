@@ -1,29 +1,37 @@
-@whiteish: #F3F1F2;
-@lightdark: #C8CCCF;
+@whiteish: #f3f1f2;
+@lightdark: #c8cccf;
 @darkish: #666;
 @dark: #4c585d;
 
 /* Project-specific styles go here */
 #root {
-    font-family: 'Source Sans Pro Light', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
-    margin: 0;
-    color: #293c4b;
-    svg {
-        height: 300px;
-        padding: 4em;
-    }
+  font-family: "Source Sans Pro Light", "Trebuchet MS", "Lucida Grande",
+    "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
+  margin: 0;
+  color: #293c4b;
+  font-size: 18px;
+  background-color: white;
+
+  p {
+    margin-left: 10px;
+    max-width: 600px;
+  }
+
+  svg {
+  }
   h1 {
     font-size: 30px;
   }
-  
+
   img {
     margin: 20px 0;
     max-width: 200px;
   }
-} 
+}
 
 @media (max-width: 800px) {
-    #root {}
+  #root {
+  }
 }
 
 #intro {
@@ -35,8 +43,73 @@
 /* scrollama */
 #scroll {
   position: relative;
-  border-top: 1px dashed #000;
-  border-bottom: 1px dashed #000;
+  .quartet {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 100%;
+    .barchart {
+      flex: 1 0 300px;
+      padding: 5px 10px;
+      .label {
+        font-family: "Stag Book";
+        font-size: 18px;
+        text-align: center;
+        background: #8c8c8c;
+        margin: 0 5px;
+        color: white;
+      }
+      .barchart-chart {
+        .column rect {
+          fill: rgba(211,211,211,0.8);
+        }
+        .column text {
+          display: none;
+          font-family: 'Stag Book';
+        }
+        .column:hover rect {
+          fill: rgb(211,211,211);
+        }
+        .column:hover text {
+          display: inline;
+        }
+      }
+      .barchart-chart.fatal {
+        .column rect {
+          fill: rgba(139, 0, 0, 0.8);
+        }
+        .column:hover rect {
+          fill: rgb(139, 0, 0);
+        }
+      }
+      .barchart-chart.serious {
+        .column rect {
+          fill: rgba(222,63,83,0.8);
+        }
+        .column:hover rect {
+          fill: rgb(222,63,83);
+        }
+      }
+      .barchart-chart.minor{
+        .column rect {
+          fill: rgba(255,165,0,0.8);
+        }
+        .column:hover rect {
+          fill: rgb(255,165,0);
+        }
+      }
+      svg {
+        padding: 10px;
+        overflow: visible;
+        .column,
+        .tick {
+          text {
+            font-size: 28px;
+          }
+        }
+      }
+    }
+  }
 }
 .scroll__graphic {
   position: -webkit-sticky;
@@ -55,11 +128,16 @@
   -moz-transform: translateY(-50%);
   -webkit-transform: translateY(-50%);
   transform: translateY(-50%);
-  background-color: #ddd;
-  border: 1px solid #000;
+  .step-chart {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: opacity 1s ease-in-out;
+  }
 }
 .chart p {
-  text-align: center;
   padding: 1rem;
   position: absolute;
   top: 50%;
@@ -79,15 +157,18 @@
 }
 .step {
   margin: 2rem auto;
-  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: rgba(200, 200, 200, 0.77);
+  border: 1px solid rgba(200, 200, 200, 0.77);
+  transition: color, border 500ms ease-in-out;
 }
 .step.is-active {
-  background-color: lightgoldenrodyellow;
+  color: rgba(50, 50, 50, 0.77);
+  border: 1px solid rgba(50, 50, 50, 0.77);
 }
 .step p {
-  text-align: center;
   padding: 1rem;
   font-size: 1.5rem;
 }
-
- 

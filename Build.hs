@@ -13,6 +13,8 @@ import qualified Data.Text.Lazy.IO             as TL
 import           Database.PostgreSQL.Simple
 import           Graphics.Svg                             ( prettyText )
 import Data.Csv (encodeDefaultOrderedByName)
+import qualified Data.Csv as Csv
+import qualified Data.Vector as V
 
 import           Rules
 import           Lib
@@ -92,7 +94,10 @@ main = do
                 , "interactive/webpack.*"
                 , "interactive/yarn.lock"
                 ]
-            need $ ["data", articleText, generatedElm, webpackCli] ++ deps
+            need $ ["data"
+                    , articleText
+                    , "interactive" </> "src" </> "nym_yearly.json"
+                    , generatedElm, webpackCli] ++ deps
             command_ [Cwd "interactive"] "npm" ["run", "build"]
 
         webpackCli %> \out -> do
@@ -110,6 +115,15 @@ main = do
             liftIO $ dummyData out
 
         rainfallCsv %> unzip bld "data/mfe-rainfall-19602016-CSV.zip"
+        "interactive" </> "src" </> "nym_yearly.json" %> \out -> do
+            let src = "data" </> "nym_yearly.csv"
+            need [src]
+            liftIO $ do
+                bs <- BL.readFile src
+                let ll = case Csv.decode Csv.HasHeader bs of
+                            Right csv -> V.toList csv
+                            Left csv -> []
+                BL.writeFile out $ encode (ll::[Annual])
 
         -- svgCoastFile %> \out -> do
         --     deps <- getDirectoryFiles "" ["preparation//*.hs"]

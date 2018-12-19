@@ -8,6 +8,7 @@ module Lib
     , dummyData
     , rainfall
     , article
+    , Annual(..)
     ) where
 
 import           Data.Aeson                      as A

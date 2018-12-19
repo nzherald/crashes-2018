@@ -7,6 +7,8 @@ import "./root.less"
 import {Elm} from "./Main.elm"
 
 import article from './article.json'
+import nym from './nym_yearly.json'
+
 
 function initScrollama(app) {
     // const {default: scrollama} = await import ('scrollama')
@@ -34,7 +36,7 @@ function initScrollama(app) {
 			var chartMargin = 32;
 			var chartWidth = graphic.offsetWidth - chartMargin;
 			chart.style['width'] = chartWidth + 'px'
-			chart.style['height'] = Math.floor(window.innerHeight / 2) + 'px'
+			chart.style['height'] = Math.floor(window.innerHeight * 0.9) + 'px'
 			// 3. tell scrollama to update new element dimensions
 			scroller.resize();
 		}
@@ -62,7 +64,7 @@ function initScrollama(app) {
 				graphic: '.scroll__graphic',
 				text: '.scroll__text',
 				step: '.scroll__text .step',
-				debug: true,
+				debug: false,
 			})
 				.onStepEnter(handleStepEnter)
 				.onContainerEnter(handleContainerEnter)
@@ -79,7 +81,7 @@ class Main {
         document.getElementById('root').innerHTML = '<div id="elm"></div>'
         var app = Elm.Main.init({
             node: document.getElementById('elm'),
-            flags: { article }
+            flags: { article, nym }
           });
         this.fadeOut()
         initScrollama(app)

@@ -49,3 +49,32 @@ jsonEncScrollyArticle  val =
    , ("outro", (Json.Encode.list jsonEncScrollySection) val.outro)
    ]
 
+
+
+type alias Annual  =
+   { year: Int
+   , fatal: Float
+   , minor: Float
+   , nonInjury: Float
+   , serious: Float
+   }
+
+jsonDecAnnual : Json.Decode.Decoder ( Annual )
+jsonDecAnnual =
+   Json.Decode.succeed (\pyear pfatal pminor pnonInjury pserious -> {year = pyear, fatal = pfatal, minor = pminor, nonInjury = pnonInjury, serious = pserious})
+   |> required "year" (Json.Decode.int)
+   |> required "fatal" (Json.Decode.float)
+   |> required "minor" (Json.Decode.float)
+   |> required "nonInjury" (Json.Decode.float)
+   |> required "serious" (Json.Decode.float)
+
+jsonEncAnnual : Annual -> Value
+jsonEncAnnual  val =
+   Json.Encode.object
+   [ ("year", Json.Encode.int val.year)
+   , ("fatal", Json.Encode.float val.fatal)
+   , ("minor", Json.Encode.float val.minor)
+   , ("nonInjury", Json.Encode.float val.nonInjury)
+   , ("serious", Json.Encode.float val.serious)
+   ]
+

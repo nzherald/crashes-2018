@@ -16,6 +16,7 @@ library(RPostgreSQL)
 library(zoo)
 library(lubridate)
 library(here)
+library(knitr)
 db <- dbConnect(PostgreSQL(), dbname='crashes-18')
 ```
 
@@ -81,6 +82,32 @@ christmas2 <- crashes %>%
             ratio = xmas_fatal/fatal,
             ratio_sev = xmas_fatal_severe/fatal_severe
             )
+
+
+newyears <- crashes %>%
+  filter(md == '1-1')
+```
+
+```{r, fig.height=3}
+nym_yearly <- newyears %>% 
+  filter(period == 0) %>%
+  group_by(Year = year(day), Severity=severity) %>%
+  summarise(Count=sum(count,na.rm=T))
+
+ggplot(nym_yearly, aes(x=Year,y=Count)) +
+  geom_col() +
+  facet_wrap(. ~ reorder(Severity, Count), scales="free_y") + 
+  theme_tufte()
+
+ggsave(here("assets/nym_yearly.svg"), width=4, height=2)
+
+nym_yearly %>%
+  spread(Severity, Count, fill=0) %>%
+  rename_all(tolower) %>%
+  rename(nonInjury=`non-injury`) %>%
+  write_csv(here('data/nym_yearly.csv'))
+
+kable(newyears %>% filter(period==0) %>% group_by(severity) %>% summarise(count=sum(count)))
 ```
 
 Grab some rainfall data

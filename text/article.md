@@ -3,7 +3,6 @@ title: Crashes through the year
 author: Chris Knox
 intro:
   - intro
-  - par two
 outro:
   - outro one
 ---
@@ -28,16 +27,24 @@ trigger a scrolly article.
 
 # intro
 
-After falling for several years New Zealand's road toll has started to rise again.
 
-While our road toll has fallen it remains high by international standards.
+New Years morning is the worst morning on New Zealand's roads.
 
----
+Data released
+to the _New Zealand Herald_ by _NZTA_ suggests that New Zealanders are still
+partying, driving, and then crashing.
 
-# par two
+Since the start of the year 2000
+There have been 444 crashes recorded between midnight and 6 am
+in New Years day. 12 of these were fatal, 33 resulted in serious injuries, and 108
+in minor injuries.
 
-The _New Zealand Herald_ has analysed every hour since that start of 2000 to see
-when fatal and serious injury crashes occur.
+The next worst morning is February 6th, when only 234 crashes 
+were recorded in the same time period.
+
+The combination of New Years morning and Waitangi Day morning as the two worst
+mornings on our roads suggests that New Zealander's are not managing their
+partying and transport safely.
 
 ---
 

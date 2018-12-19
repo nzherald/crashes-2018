@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveAnyClass    #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE FlexibleInstances  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE DuplicateRecordFields #-}
@@ -35,6 +36,13 @@ data ScrollySection
     , _text :: Text
     } deriving (Show, Eq)
 
+data ScrollyArticle
+    = ScrollyArticle
+    { _intro :: [ScrollySection]
+    , _sections :: [ScrollySection]
+    , _outro :: [ScrollySection] 
+    } deriving (Show, Eq)
+
 instance ToNamedRecord Rainfall where
     toNamedRecord = genericToNamedRecord csvOptions
 
@@ -52,9 +60,12 @@ instance ToField Day where
 
 gen = makeElmModule "DataTypes" 
     [ DefineElm (Proxy :: Proxy ScrollySection)
+    , DefineElm (Proxy :: Proxy ScrollyArticle)
     ]
 
 deriveBoth elmOptions ''Rainfall
 deriveBoth elmOptions ''ScrollySection
+deriveBoth elmOptions ''ScrollyArticle
 makeFieldsNoPrefix ''Rainfall
 makeFieldsNoPrefix ''ScrollySection
+makeFieldsNoPrefix ''ScrollyArticle

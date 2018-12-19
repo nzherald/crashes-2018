@@ -26,7 +26,7 @@ function initScrollama(app) {
                 steps[i].style.height = stepHeight + 'px'
             }
 			// 2. update width/height of graphic element
-			var bodyWidth = document.body.offsetWidth
+			var bodyWidth = document.getElementById('root').offsetWidth
 			var textWidth = text.offsetWidth;
 			var graphicWidth = bodyWidth - textWidth;
             graphic.style['width'] = graphicWidth + 'px'

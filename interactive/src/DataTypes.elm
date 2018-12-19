@@ -26,3 +26,26 @@ jsonEncScrollySection  val =
    , ("text", Json.Encode.string val.text)
    ]
 
+
+
+type alias ScrollyArticle  =
+   { intro: (List ScrollySection)
+   , sections: (List ScrollySection)
+   , outro: (List ScrollySection)
+   }
+
+jsonDecScrollyArticle : Json.Decode.Decoder ( ScrollyArticle )
+jsonDecScrollyArticle =
+   Json.Decode.succeed (\pintro psections poutro -> {intro = pintro, sections = psections, outro = poutro})
+   |> required "intro" (Json.Decode.list (jsonDecScrollySection))
+   |> required "sections" (Json.Decode.list (jsonDecScrollySection))
+   |> required "outro" (Json.Decode.list (jsonDecScrollySection))
+
+jsonEncScrollyArticle : ScrollyArticle -> Value
+jsonEncScrollyArticle  val =
+   Json.Encode.object
+   [ ("intro", (Json.Encode.list jsonEncScrollySection) val.intro)
+   , ("sections", (Json.Encode.list jsonEncScrollySection) val.sections)
+   , ("outro", (Json.Encode.list jsonEncScrollySection) val.outro)
+   ]
+

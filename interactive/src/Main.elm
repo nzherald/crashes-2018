@@ -1,6 +1,6 @@
 port module Main exposing (Model, Msg(..), init, main, update, view)
 
-import BarChart exposing (barchart)
+import BarChart exposing (..)
 import Browser
 import DataTypes exposing (..)
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
@@ -9,6 +9,8 @@ import Http
 import Json.Encode as E
 import Json.Decode exposing (Value, decodeValue, list)
 import Markdown exposing (toHtml)
+import Time exposing (Posix)
+import DateFormat
 
 
 
@@ -99,7 +101,7 @@ nymBarcharts model visible =
         barChart cls label d =
             div [ class "barchart" ]
                 [ div [ class "label" ] [ text label ]
-                , barchart cls d
+                , barchart <| BarchartOptions d cls "Year" dateFormat 3
                 ]
     in
     div [class "step-chart"
@@ -131,7 +133,7 @@ periodBarcharts model visible =
         barChart cls label d =
             div [ class "barchart" ]
                 [ div [ class "label" ] [ text label ]
-                , barchart cls d
+                , barchart <| BarchartOptions d cls "Year" dayFormat 9 
                 ]
     in
     div [class "step-chart"
@@ -146,7 +148,7 @@ periodBarcharts model visible =
             [ text "Christmas Holiday Crashes" ]
         ,  div
             [ class "chart-subtitle" ]
-            [ ]
+            [ text "Total number of crashes in each six hour period of the Christmas Holiday since 2000" ]
         , div
             [ class "quartet"
             ]
@@ -178,3 +180,13 @@ subscriptions model =
 
 
 port scroll : (( String, Int ) -> msg) -> Sub msg
+
+
+
+dayFormat : Posix -> String
+dayFormat =
+    DateFormat.format [ DateFormat.dayOfMonthFixed ] Time.utc
+
+dateFormat : Posix -> String
+dateFormat =
+    DateFormat.format [ DateFormat.yearNumberLastTwo ] Time.utc

@@ -28,7 +28,7 @@ articleText = "interactive/src/article.json"
 
 
 dataFiles = map (\f -> "data" </> f)
-                ["yearly.csv", "nym_yearly.csv", "xmas_periods.csv"]
+                ["yearly.csv", "nym_yearly.csv", "xmas_periods.csv", "daily_trend.csv"]
 
 
 main :: IO ()
@@ -101,6 +101,7 @@ main = do
                    , articleText
                    , "interactive" </> "src" </> "nym_yearly.json"
                    , "interactive" </> "src" </> "xmas_periods.json"
+                   , "interactive" </> "src" </> "daily_trend.json"
                    , generatedElm
                    , webpackCli
                    ]

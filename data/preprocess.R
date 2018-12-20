@@ -5,6 +5,8 @@ library(zoo)
 library(lubridate)
 library(here)
 library(knitr)
+library(stats)
+
 db <- dbConnect(PostgreSQL(), dbname='crashes-18')
 
 
@@ -50,7 +52,8 @@ crashes <- tbl(db, "crashes") %>%
     period == -1 ~ ymd_h(paste(paste('1900', month(day), mday(day), sep='-'), 1)),
     month(day) == 12 ~ ymd_h(paste(paste('2019', month(day), mday(day), sep='-'), period * 6 + 3)),
     TRUE ~ ymd_h(paste(paste('2020', month(day), mday(day), sep='-'), period * 6 + 3))
-  )
+  ),
+  fakeDay = ymd(paste('2020', month(day), mday(day), sep='-'))
   )
 
 christmas <- crashes %>%
@@ -107,3 +110,29 @@ crashes %>% filter(xmas & period != -1) %>%
   rename(nonInjury=`non-injury`) %>%
   write_csv(here('data/xmas_periods.csv'))
 
+# predictions
+
+daily.fatal <- crashes %>% filter(year(day) != 2018 & severity=='Fatal') %>% group_by(fakeDay) %>% summarise(count=sum(count)/18)
+daily.serious<- crashes %>% filter(year(day) != 2018 & severity=='Serious') %>% group_by(fakeDay) %>% summarise(count=sum(count)/18)
+daily.minor <- crashes %>% filter(year(day) != 2018 & severity=='Minor') %>% group_by(fakeDay) %>% summarise(count=sum(count)/18)
+daily.non <- crashes %>% filter(year(day) != 2018 & severity=='Non-injury') %>% group_by(fakeDay) %>% summarise(count=sum(count)/18)
+
+# There is a real discontinuity in the data between December and Janurary
+# My guess is that it is a data collection issue - but I'd like to explore it more later ...
+pred_daily <- function(daily) {
+  daily <- bind_rows(daily,daily %>% filter(yday(fakeDay) > 266) %>% mutate(fakeDay=fakeDay-years(1)))
+  daily <- bind_rows(daily,daily %>% filter(yday(fakeDay) <= 100) %>% mutate(fakeDay=fakeDay+years(1)))
+  daily.lo <- loess(count ~ as.numeric(fakeDay), daily)
+  predict(daily.lo)[101:466]
+}
+
+pred.fatal <- pred_daily(daily.fatal)
+pred.serious <- pred_daily(daily.serious)
+pred.minor <- pred_daily(daily.minor)
+pred.non <- pred_daily(daily.non)
+
+tibble(faketime=seq.Date(as.Date('2020-01-01'), as.Date('2020-12-31'), 1),
+       fatal=pred.fatal,
+       minor=pred.minor,
+       nonInjury=pred.non,
+       serious=pred.serious) %>% write_csv(here("data/daily_trend.csv"))

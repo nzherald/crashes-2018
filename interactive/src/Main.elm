@@ -1,16 +1,17 @@
 port module Main exposing (Model, Msg(..), init, main, update, view)
 
-import BarChart exposing (..)
+import App.BarChart exposing (..)
+import App.DataTypes exposing (..)
+import App.LineChart exposing (..)
 import Browser
-import DataTypes exposing (..)
+import DateFormat
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
 import Html.Attributes exposing (attribute, class, classList, height, id, src, style, width)
 import Http
-import Json.Encode as E
 import Json.Decode exposing (Value, decodeValue, list)
+import Json.Encode as E
 import Markdown exposing (toHtml)
 import Time exposing (Posix)
-import DateFormat
 
 
 
@@ -35,11 +36,12 @@ type alias Config =
 
 init : Config -> ( Model, Cmd Msg )
 init { article, nym, periods } =
-    let 
-        dec v = decodeValue (list jsonDecCrash) v
+    let
+        dec v =
+            decodeValue (list jsonDecCrash) v
                 |> Result.withDefault []
     in
-        ( Model article (dec nym) (dec periods) Nothing -1, Cmd.none )
+    ( Model article (dec nym) (dec periods) Nothing -1, Cmd.none )
 
 
 
@@ -104,17 +106,19 @@ nymBarcharts model visible =
                 , barchart <| BarchartOptions d cls "Year" dateFormat 3
                 ]
     in
-    div [class "step-chart"
-            , style "opacity" <|
-                if visible then
-                    "1"
+    div
+        [ class "step-chart"
+        , style "opacity" <|
+            if visible then
+                "1"
 
-                else
-                    "0"]
+            else
+                "0"
+        ]
         [ div
             [ class "chart-title" ]
             [ text "New Year's Morning Crashes" ]
-        ,  div
+        , div
             [ class "chart-subtitle" ]
             [ text "Total number of crashes recorded between midnight and 6am on January 1 since 2000" ]
         , div
@@ -133,20 +137,22 @@ periodBarcharts model visible =
         barChart cls label d =
             div [ class "barchart" ]
                 [ div [ class "label" ] [ text label ]
-                , barchart <| BarchartOptions d cls "Year" dayFormat 9 
+                , barchart <| BarchartOptions d cls "Year" dayFormat 9
                 ]
     in
-    div [class "step-chart"
-            , style "opacity" <|
-                if visible then
-                    "1"
+    div
+        [ class "step-chart"
+        , style "opacity" <|
+            if visible then
+                "1"
 
-                else
-                    "0"]
+            else
+                "0"
+        ]
         [ div
             [ class "chart-title" ]
             [ text "Christmas Holiday Crashes" ]
-        ,  div
+        , div
             [ class "chart-subtitle" ]
             [ text "Total number of crashes in each six hour period of the Christmas Holiday since 2000" ]
         , div
@@ -182,10 +188,10 @@ subscriptions model =
 port scroll : (( String, Int ) -> msg) -> Sub msg
 
 
-
 dayFormat : Posix -> String
 dayFormat =
     DateFormat.format [ DateFormat.dayOfMonthFixed ] Time.utc
+
 
 dateFormat : Posix -> String
 dateFormat =

@@ -97,7 +97,7 @@ jsonEncPosix = Json.Encode.string << fromTime
 #{body}
 |] 
     where
-        head = moduleHeader Elm0p18 "DataTypes"
+        head = moduleHeader Elm0p18 "App.DataTypes"
         body = makeModuleContent
             [ DefineElm (Proxy :: Proxy ScrollySection)
             , DefineElm (Proxy :: Proxy ScrollyArticle)

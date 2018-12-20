@@ -1,4 +1,4 @@
-module BarChart exposing (barchart, BarchartOptions)
+module App.BarChart exposing (barchart, BarchartOptions)
 
 import Time exposing (Posix)
 import Axis

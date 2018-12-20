@@ -1,5 +1,5 @@
 
-module DataTypes exposing(..)
+module App.DataTypes exposing(..)
 
 import Json.Decode
 import Json.Encode exposing (Value)

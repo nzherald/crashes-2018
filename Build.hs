@@ -23,7 +23,7 @@ import           Config
 
 webapp = "interactive/dist/embed.js"
 webpackCli = "interactive/node_modules/.bin/webpack"
-generatedElm = "interactive/src/DataTypes.elm"
+generatedElm = "interactive/src/App/DataTypes.elm"
 articleText = "interactive/src/article.json"
 
 

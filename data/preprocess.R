@@ -80,7 +80,7 @@ newyears <- crashes %>%
 
 nym_yearly <- newyears %>% 
   filter(period == 0) %>%
-  group_by(Year = year(day), Severity=severity) %>%
+  group_by(Year = ymd(paste(year(day),1,1,sep='-')), Severity=severity) %>%
   summarise(Count=sum(count,na.rm=T))
 
 nym_yearly %>%

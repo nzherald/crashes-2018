@@ -1,12 +1,17 @@
+
 module DataTypes exposing(..)
 
 import Json.Decode
 import Json.Encode exposing (Value)
--- The following module comes from bartavelle/json-helpers
 import Json.Helpers exposing (..)
 import Dict exposing (Dict)
 import Set exposing (Set)
+import Time exposing (Posix)
+import Json.Decode.Extra exposing (datetime)
+import Iso8601 exposing (fromTime)
 
+jsonDecPosix = datetime
+jsonEncPosix = Json.Encode.string << fromTime 
 
 type alias ScrollySection  =
    { label: String
@@ -51,30 +56,31 @@ jsonEncScrollyArticle  val =
 
 
 
-type alias Annual  =
-   { year: Int
+type alias Crash  =
+   { time: Posix
    , fatal: Float
    , minor: Float
    , nonInjury: Float
    , serious: Float
    }
 
-jsonDecAnnual : Json.Decode.Decoder ( Annual )
-jsonDecAnnual =
-   Json.Decode.succeed (\pyear pfatal pminor pnonInjury pserious -> {year = pyear, fatal = pfatal, minor = pminor, nonInjury = pnonInjury, serious = pserious})
-   |> required "year" (Json.Decode.int)
+jsonDecCrash : Json.Decode.Decoder ( Crash )
+jsonDecCrash =
+   Json.Decode.succeed (\ptime pfatal pminor pnonInjury pserious -> {time = ptime, fatal = pfatal, minor = pminor, nonInjury = pnonInjury, serious = pserious})
+   |> required "time" (jsonDecPosix)
    |> required "fatal" (Json.Decode.float)
    |> required "minor" (Json.Decode.float)
    |> required "nonInjury" (Json.Decode.float)
    |> required "serious" (Json.Decode.float)
 
-jsonEncAnnual : Annual -> Value
-jsonEncAnnual  val =
+jsonEncCrash : Crash -> Value
+jsonEncCrash  val =
    Json.Encode.object
-   [ ("year", Json.Encode.int val.year)
+   [ ("time", jsonEncPosix val.time)
    , ("fatal", Json.Encode.float val.fatal)
    , ("minor", Json.Encode.float val.minor)
    , ("nonInjury", Json.Encode.float val.nonInjury)
    , ("serious", Json.Encode.float val.serious)
    ]
+
 

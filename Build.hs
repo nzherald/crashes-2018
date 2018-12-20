@@ -131,7 +131,7 @@ main = do
                 let ll = case Csv.decode Csv.HasHeader bs of
                         Right csv -> V.toList csv
                         Left  csv -> []
-                BL.writeFile out $ encode (ll :: [Annual])
+                BL.writeFile out $ encode (ll :: [Crash])
   where
     unzip bld z o = do
         need [z]

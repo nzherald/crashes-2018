@@ -1,5 +1,7 @@
 module BarChart exposing (barchart)
 
+import Time exposing (Posix)
+import DateFormat
 import Axis
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import TypedSvg exposing (g, rect, svg, text_)
@@ -23,14 +25,18 @@ padding : Float
 padding =
     30
 
+dateFormat : Time.Posix -> String
+dateFormat =
+    DateFormat.format [ DateFormat.yearNumberLastTwo ] Time.utc
 
-xScale : List ( Int, Float ) -> BandScale Int
+
+xScale : List ( Posix, Float ) -> BandScale Posix
 xScale model =
     List.map Tuple.first model
         |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
 
 
-yScale : List ( Int, Float ) -> ContinuousScale Float
+yScale : List ( Posix, Float ) -> ContinuousScale Float
 yScale model =
     Scale.linear ( h - 2 * padding, 0 )
         ( 0
@@ -40,17 +46,17 @@ yScale model =
         )
 
 
-xAxis : List ( Int, Float ) -> Svg msg
+xAxis : List ( Posix, Float ) -> Svg msg
 xAxis model =
-    Axis.bottom [] (Scale.toRenderable (String.replace "20" "" << String.fromInt) (xScale model))
+    Axis.bottom [] (Scale.toRenderable dateFormat (xScale model))
 
 
-yAxis : List ( Int, Float ) -> Svg msg
+yAxis : List ( Posix, Float ) -> Svg msg
 yAxis model =
     Axis.left [ Axis.tickCount 2 ] (yScale model)
 
 
-column : BandScale Int -> ContinuousScale Float -> ( Int, Float ) -> Svg msg
+column : BandScale Posix -> ContinuousScale Float -> ( Posix, Float ) -> Svg msg
 column scalex scaley ( date, value ) =
     g [ class [ "column" ] ]
         [ rect
@@ -61,7 +67,7 @@ column scalex scaley ( date, value ) =
             ]
             []
         , text_
-            [ x <| Scale.convert (Scale.toRenderable String.fromInt scalex) date
+            [ x <| Scale.convert (Scale.toRenderable dateFormat scalex) date
             , y <| Scale.convert scaley value - 5
             , textAnchor AnchorMiddle
             ]
@@ -69,7 +75,7 @@ column scalex scaley ( date, value ) =
         ]
 
 
-barchart: String -> List ( Int, Float ) -> Svg msg
+barchart: String -> List ( Posix, Float ) -> Svg msg
 barchart cls model =
     svg
         [ viewBox 0 0 w h

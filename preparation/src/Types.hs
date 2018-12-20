@@ -7,6 +7,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE QuasiQuotes  #-}
 
 module Types where
 
@@ -17,9 +18,13 @@ import           GHC.Generics
 import           Data.Csv                      as Csv
 import           Data.Proxy
 import qualified Data.ByteString.Char8         as BC8
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import           Elm.Derive                    as Elm
 import           Elm.Module
+import Elm.Versions
 import           Control.Lens
+import Data.String.Interpolate
 
 import TypeTH
 
@@ -44,14 +49,20 @@ data ScrollyArticle
     } deriving (Show, Eq)
 
 
-data Annual
-    = Annual
-    { _year :: Int
+data Crash
+    = Crash
+    { _time :: UTCTime
     , _fatal :: Double
     , _minor :: Double
     , _nonInjury :: Double
     , _serious :: Double
     } deriving (Show, Eq, Generic, Csv.FromRecord)
+
+instance FromField UTCTime where
+    parseField f = 
+        case parseTimeM True defaultTimeLocale "%F" (T.unpack . T.decodeUtf8 $ f) of
+            Just utc -> return utc
+            Nothing -> parseTimeM True defaultTimeLocale "%FT%T%Z" (T.unpack . T.decodeUtf8 $ f)
 
 instance ToNamedRecord Rainfall where
     toNamedRecord = genericToNamedRecord csvOptions
@@ -68,17 +79,36 @@ instance FromField Day where
 instance ToField Day where
   toField = BC8.pack . formatTime defaultTimeLocale "%Y-%m-%d"
 
-gen = makeElmModule "DataTypes" 
-    [ DefineElm (Proxy :: Proxy ScrollySection)
-    , DefineElm (Proxy :: Proxy ScrollyArticle)
-    , DefineElm (Proxy :: Proxy Annual)
-    ]
+gen = [i|
+#{head}
+
+import Json.Decode
+import Json.Encode exposing (Value)
+import Json.Helpers exposing (..)
+import Dict exposing (Dict)
+import Set exposing (Set)
+import Time exposing (Posix)
+import Json.Decode.Extra exposing (datetime)
+import Iso8601 exposing (fromTime)
+
+jsonDecPosix = datetime
+jsonEncPosix = Json.Encode.string << fromTime 
+
+#{body}
+|] 
+    where
+        head = moduleHeader Elm0p18 "DataTypes"
+        body = makeModuleContent
+            [ DefineElm (Proxy :: Proxy ScrollySection)
+            , DefineElm (Proxy :: Proxy ScrollyArticle)
+            , DefineElm (Proxy :: Proxy Crash)
+            ]
 
 deriveBoth elmOptions ''Rainfall
 deriveBoth elmOptions ''ScrollySection
 deriveBoth elmOptions ''ScrollyArticle
-deriveBoth elmOptions ''Annual
+deriveBoth elmOptions ''Crash
 makeFieldsNoPrefix ''Rainfall
 makeFieldsNoPrefix ''ScrollySection
 makeFieldsNoPrefix ''ScrollyArticle
-makeFieldsNoPrefix ''Annual
+makeFieldsNoPrefix ''Crash

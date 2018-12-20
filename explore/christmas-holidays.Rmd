@@ -56,10 +56,15 @@ crashes <- tbl(db, "crashes") %>%
       hour < 6 ~ 0,
       hour >= 6 & hour < 12 ~ 1,
       hour >= 12 & hour < 18 ~ 2,
-      hour >= 16 ~ 4,
+      hour >= 16 ~ 3,
       TRUE ~ -1
     ),
-    md = paste(month(day), mday(day), sep='-')
+    md = paste(month(day), mday(day), sep='-'),
+    fakeTime = case_when(
+      period == -1 ~ ymd_h(paste(paste('1900', month(day), mday(day), sep='-'), 1)),
+      month(day) == 12 ~ ymd_h(paste(paste('2019', month(day), mday(day), sep='-'), period * 6 + 3)),
+      TRUE ~ ymd_h(paste(paste('2020', month(day), mday(day), sep='-'), period * 6 + 3))
+    )
   )
 
 christmas <- crashes %>%
@@ -108,6 +113,16 @@ nym_yearly %>%
   write_csv(here('data/nym_yearly.csv'))
 
 kable(newyears %>% filter(period==0) %>% group_by(severity) %>% summarise(count=sum(count)))
+```
+
+```{r}
+crashes %>% filter(xmas & day > '2000-02-02') %>%
+  group_by(xmasYear,severity) %>%
+  summarise(count=sum(count)) %>%
+  spread(severity, count, fill=0) %>%
+  rename_all(tolower) %>%
+  rename(nonInjury=`non-injury`) %>%
+  write_csv(here('data/yearly.csv'))
 ```
 
 Grab some rainfall data

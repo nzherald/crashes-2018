@@ -4,7 +4,7 @@ import BarChart exposing (barchart)
 import Browser
 import DataTypes exposing (..)
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
-import Html.Attributes exposing (attribute, class, classList, height, id, src, width, style)
+import Html.Attributes exposing (attribute, class, classList, height, id, src, style, width)
 import Http
 import Json.Encode as E
 import Markdown exposing (toHtml)
@@ -17,6 +17,7 @@ import Markdown exposing (toHtml)
 type alias Model =
     { article : ScrollyArticle
     , nym : List Annual
+    , periods : List Annual
     , activeLabel : Maybe String
     , activeStep : Int
     }
@@ -25,12 +26,13 @@ type alias Model =
 type alias Config =
     { article : ScrollyArticle
     , nym : List Annual
+    , periods : List Annual
     }
 
 
 init : Config -> ( Model, Cmd Msg )
-init { article, nym } =
-    ( Model article nym Nothing -1, Cmd.none )
+init { article, nym, periods } =
+    ( Model article nym periods Nothing -1, Cmd.none )
 
 
 
@@ -76,8 +78,8 @@ view model =
         , section [ id "scroll" ]
             [ div [ class "scroll__graphic sticky" ]
                 [ div [ class "chart" ]
-                        [ nymBarcharts model (model.activeStep == 0)
-                        ]
+                    [ nymBarcharts model (model.activeStep == 0)
+                    ]
                 ]
             , div [ class "scroll__text" ]
                 (model |> .article |> .sections |> List.indexedMap step)
@@ -94,11 +96,27 @@ nymBarcharts model visible =
                 , barchart cls d
                 ]
     in
-    div [ class "quartet", class "step-chart", style "opacity" <| if visible then "1" else "0" ]
-        [ barChart "fatal" "Fatal" <| List.map (\d -> ( d.year, d.fatal )) model.nym
-        , barChart "serious" "Serious Injury" <| List.map (\d -> ( d.year, d.serious )) model.nym
-        , barChart "minor" "Minor Injury" <| List.map (\d -> ( d.year, d.minor )) model.nym
-        , barChart "non" "Non-injury" <| List.map (\d -> ( d.year, d.nonInjury )) model.nym
+    div [class "step-chart"
+            , style "opacity" <|
+                if visible then
+                    "1"
+
+                else
+                    "0"]
+        [ div
+            [ class "chart-title" ]
+            [ text "New Year's Morning Crashes" ]
+        ,  div
+            [ class "chart-subtitle" ]
+            [ text "Total number of crashes recorded between midnight and 6am on January 1 since 2000" ]
+        , div
+            [ class "quartet"
+            ]
+            [ barChart "fatal" "Fatal" <| List.map (\d -> ( d.year, d.fatal )) model.nym
+            , barChart "serious" "Serious Injury" <| List.map (\d -> ( d.year, d.serious )) model.nym
+            , barChart "minor" "Minor Injury" <| List.map (\d -> ( d.year, d.minor )) model.nym
+            , barChart "non" "Non-injury" <| List.map (\d -> ( d.year, d.nonInjury )) model.nym
+            ]
         ]
 
 

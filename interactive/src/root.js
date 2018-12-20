@@ -8,6 +8,7 @@ import {Elm} from "./Main.elm"
 
 import article from './article.json'
 import nym from './nym_yearly.json'
+import periods from './xmas_periods.json'
 
 
 function initScrollama(app) {
@@ -81,7 +82,7 @@ class Main {
         document.getElementById('root').innerHTML = '<div id="elm"></div>'
         var app = Elm.Main.init({
             node: document.getElementById('elm'),
-            flags: { article, nym }
+            flags: { article, nym, periods }
           });
         this.fadeOut()
         initScrollama(app)

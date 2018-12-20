@@ -12,9 +12,10 @@ import qualified Data.ByteString.Char8         as BS
 import qualified Data.Text.Lazy.IO             as TL
 import           Database.PostgreSQL.Simple
 import           Graphics.Svg                             ( prettyText )
-import Data.Csv (encodeDefaultOrderedByName)
-import qualified Data.Csv as Csv
-import qualified Data.Vector as V
+import           Data.Csv                                 ( encodeDefaultOrderedByName
+                                                          )
+import qualified Data.Csv                      as Csv
+import qualified Data.Vector                   as V
 
 import           Rules
 import           Lib
@@ -23,20 +24,20 @@ import           Config
 webapp = "interactive/dist/embed.js"
 webpackCli = "interactive/node_modules/.bin/webpack"
 generatedElm = "interactive/src/DataTypes.elm"
-playData = "interactive/static/play.json"
 articleText = "interactive/src/article.json"
 
-svgCoastFile = "assets/coast.svg"
+
+dataFiles = map (\f -> "data" </> f)
+                ["yearly.csv", "nym_yearly.csv", "xmas_periods.csv"]
 
 
 main :: IO ()
 main = do
     (Config bld dbName) <- readConfig
 
-    let coastShp    = bld </> "nz-coastlines-topo-150k.shp"
-        crashData   = bld </> "crash-data.csv"
-        rainfallCsv = bld </> "rainfall-19602016.csv"
-        getConn     = connectPostgreSQL $ BS.pack $ "dbname=" ++ dbName
+    let coastShp  = bld </> "nz-coastlines-topo-150k.shp"
+        crashData = bld </> "crash-data.csv"
+        getConn   = connectPostgreSQL $ BS.pack $ "dbname=" ++ dbName
     shakeArgs shakeOptions { shakeFiles = bld } $ do
         db     <- addOracleCache addDb
         shp    <- addOracleCache loadShp2PgSql
@@ -44,15 +45,18 @@ main = do
         psqlin <- addOracleCache runPsqlFileStdin
 
         let hasDb = db $ Db dbName
+            dbLoad =
+                psqlin $ PsqlFileStdin
+                    (dbName, "data" </> "load-nzta-data.sql", crashData, [])
 
         want [webapp]
 
-        
+
         "data" </> "average-rainfall.csv" %> \out -> do
             need ["data"]
             liftIO $ do
-                conn   <- getConn
-                d <- rainfall conn
+                conn <- getConn
+                d    <- rainfall conn
                 BL.writeFile out $ encodeDefaultOrderedByName d
 
         articleText %> \out -> do
@@ -65,10 +69,8 @@ main = do
 
         "data" ~> do
             hasDb
-            psqlin $ PsqlFileStdin
-                (dbName, "data" </> "rainfall.sql", rainfallCsv, [])
-            psqlin $ PsqlFileStdin
-                (dbName, "data" </> "load-nzta-data.sql", crashData, [])
+            dbLoad
+
 
         crashData %> \out -> do
             let raw = "data" </> "crashes by severity and hour.csv"
@@ -94,10 +96,15 @@ main = do
                 , "interactive/webpack.*"
                 , "interactive/yarn.lock"
                 ]
-            need $ ["data"
-                    , articleText
-                    , "interactive" </> "src" </> "nym_yearly.json"
-                    , generatedElm, webpackCli] ++ deps
+            need
+                $  [ "data"
+                   , articleText
+                   , "interactive" </> "src" </> "nym_yearly.json"
+                   , "interactive" </> "src" </> "xmas_periods.json"
+                   , generatedElm
+                   , webpackCli
+                   ]
+                ++ deps
             command_ [Cwd "interactive"] "npm" ["run", "build"]
 
         webpackCli %> \out -> do
@@ -109,29 +116,22 @@ main = do
             need deps
             liftIO $ genElm out
 
-        playData %> \out -> do
-            deps <- getDirectoryFiles "" ["preparation//*.hs"]
-            need deps
-            liftIO $ dummyData out
+        dataFiles &%> \_ -> do
+            hasDb
+            dbLoad
+            need ["data" </> "preprocess.R"]
+            cmd_ ("Rscript data/preprocess.R" :: String)
 
-        rainfallCsv %> unzip bld "data/mfe-rainfall-19602016-CSV.zip"
-        "interactive" </> "src" </> "nym_yearly.json" %> \out -> do
-            let src = "data" </> "nym_yearly.csv"
+        "interactive/src/*.json" %> \out -> do
+            let base = takeBaseName out
+                src  = "data" </> addExtension base "csv"
             need [src]
             liftIO $ do
                 bs <- BL.readFile src
                 let ll = case Csv.decode Csv.HasHeader bs of
-                            Right csv -> V.toList csv
-                            Left csv -> []
-                BL.writeFile out $ encode (ll::[Annual])
-
-        -- svgCoastFile %> \out -> do
-        --     deps <- getDirectoryFiles "" ["preparation//*.hs"]
-        --     need $ "gis" : deps
-        --     liftIO $ do
-        --         conn   <- getConn
-        --         coastD <- coast conn
-        --         TL.writeFile out $ prettyText $ svgCoast $ coastD
+                        Right csv -> V.toList csv
+                        Left  csv -> []
+                BL.writeFile out $ encode (ll :: [Annual])
   where
     unzip bld z o = do
         need [z]

@@ -23,9 +23,12 @@ function initScrollama(app) {
 		// initialize the scrollama
 		var scroller = scrollama();
 		// generic window resize listener event
+		var stepFactor = window.innerWidth >= 600 ? 0.75 : 1.75;
+		var chartFactor = window.innerWidth >= 600 ? 0.9 : 1;
+		var small = window.innerWidth < 600;
 		function handleResize() {
 			// 1. update height of step elements
-            var stepHeight = Math.floor(window.innerHeight * 0.75);
+            var stepHeight = Math.floor(window.innerHeight * stepFactor);
             for (var i = 0; i < steps.length; i++) {
                 steps[i].style.height = stepHeight + 'px'
             }
@@ -33,12 +36,12 @@ function initScrollama(app) {
 			var bodyWidth = document.getElementById('root').offsetWidth
 			var textWidth = text.offsetWidth;
 			var graphicWidth = bodyWidth - textWidth;
-            graphic.style['width'] = graphicWidth + 'px'
+            graphic.style['width'] = small ? "100%" : graphicWidth + 'px'
             graphic.style['height'] = window.innerHeight + 'px'
 			var chartMargin = 32;
 			var chartWidth = graphic.offsetWidth - chartMargin;
-			chart.style['width'] = chartWidth + 'px'
-			chart.style['height'] = Math.floor(window.innerHeight * 0.9) + 'px'
+			chart.style['width'] = small ? "100%" : chartWidth + 'px'
+			chart.style['height'] = Math.floor(window.innerHeight * chartFactor) + 'px'
 			// 3. tell scrollama to update new element dimensions
 			scroller.resize();
 		}
@@ -84,7 +87,7 @@ class Main {
         document.getElementById('root').innerHTML = '<div id="elm"></div>'
         var app = Elm.Main.init({
             node: document.getElementById('elm'),
-            flags: { article, nym, periods, trends }
+            flags: { article, nym, periods, trends, small: window.innerWidth < 900 }
           });
         this.fadeOut()
         initScrollama(app)

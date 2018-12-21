@@ -52,11 +52,17 @@
     width: 100%;
     font-family: "Stag Book";
     font-size: 22px;
+    @media (max-width: 800px) {
+      font-size: 16px;
+    }
   }
   .chart-subtitle {
     text-align: center;
     width: 100%;
     font-size: 15px;
+    @media (max-width: 800px) {
+      font-size: 13px;
+    }
   }
   .quartet {
     display: flex;
@@ -140,7 +146,11 @@
 
     .linechart,
     .barchart {
-      flex: 1 0 300px;
+      flex: 1 0 200px;
+      max-width: 350px;
+      @media (min-width: 1050px) {
+        flex: 1 0 250px;
+      }
       padding: 5px 10px;
       .label {
         font-family: "Stag Book";
@@ -149,6 +159,9 @@
         background: #8c8c8c;
         margin: 0 5px;
         color: white;
+        @media (max-width: 800px) {
+          font-size: 13px;
+        }
       }
 
       svg {
@@ -172,9 +185,11 @@
 .scroll__graphic {
   position: -webkit-sticky;
   position: sticky;
-  float: right;
   top: 60px;
   right: 0;
+  @media (min-width: 600px) {
+    float: right;
+  }
   -webkit-transform: translate3d(0, 0, 0);
   -moz-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
@@ -196,6 +211,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-left: 10px;
   }
 }
 .chart p {
@@ -213,18 +229,29 @@
 .scroll__text {
   position: relative;
   padding: 0 1rem;
-  max-width: 30rem;
-  width: 33%;
+  @media (min-width: 600px) {
+    max-width: 30rem;
+    width: 33%;
+  }
 }
 .step {
   margin: 2rem 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   color: rgba(200, 200, 200, 0.77);
   // border: 1px solid rgba(200, 200, 200, 0.77);
   transition: color, border 500ms ease-in-out;
+  @media (max-width: 600px) {
+    margin-bottom: 300px;
+    
+  }
 }
+  @media (max-width: 600px) {
+    .step:last-child {
+      margin-bottom: 40px;
+    }
+  }
 .step.is-active {
   color: rgba(50, 50, 50, 0.77);
   // border: 1px solid rgba(50, 50, 50, 0.77);
@@ -232,7 +259,10 @@
 .step p {
   font-size: 16px;
   margin: 0;
-  flex: 1 1 100px;
+  @media (max-width: 600px) {
+    background-color: #eee;
+    padding: 10px;
+  }
 }
 
 #period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(3) > rect,

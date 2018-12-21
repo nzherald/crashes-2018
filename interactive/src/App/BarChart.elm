@@ -16,32 +16,44 @@ w =
     900
 
 
-h : Float
-h =
+h small = if small then hs else hb
+
+hb : Float
+hb =
     350
 
 
-padding : Float
-padding =
+hs : Float
+hs = 200
+
+
+padding small = if small then paddingSmall else paddingBig
+
+paddingSmall : Float
+paddingSmall =
+    20
+
+paddingBig : Float
+paddingBig =
     50
 
 
-xScale : List ( Posix, Float ) -> BandScale Posix
-xScale model =
+xScale : Bool -> List ( Posix, Float ) -> BandScale Posix
+xScale small model =
     List.map Tuple.first model
-        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
+        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * (padding small) )
 
 
-xScaleAxis : List ( Posix, Float ) -> ContinuousScale Posix
-xScaleAxis model = 
-    Scale.time Time.utc ( 0 , w - 2 * padding ) (List.map Tuple.first model 
+xScaleAxis : Bool -> List ( Posix, Float ) -> ContinuousScale Posix
+xScaleAxis small model = 
+    Scale.time Time.utc ( 0 , w - 2 * (padding small) ) (List.map Tuple.first model 
                     |> extentBy Time.posixToMillis
                     |> Maybe.withDefault (Time.millisToPosix 0, Time.millisToPosix 1))
 
 
-yScale : List ( Posix, Float ) -> ContinuousScale Float
-yScale model =
-    Scale.linear ( h - 2 * padding, 0 )
+yScale : Bool -> List ( Posix, Float ) -> ContinuousScale Float
+yScale small model =
+    Scale.linear ( (h small) - 2 * (padding small), 0 )
         ( 0
         , List.map Tuple.second model
             |> List.maximum
@@ -49,24 +61,24 @@ yScale model =
         )
 
 
-xAxis : (Posix -> String) -> Int -> List ( Posix, Float ) -> Svg msg
-xAxis xFormat xTicks model =
-    Axis.bottom [ Axis.tickCount xTicks, Axis.tickFormat xFormat ] (xScaleAxis model)
+xAxis : Bool -> (Posix -> String) -> Int -> List ( Posix, Float ) -> Svg msg
+xAxis small xFormat xTicks model =
+    Axis.bottom [ Axis.tickCount xTicks, Axis.tickFormat xFormat ] (xScaleAxis small model)
 
 
-yAxis : List ( Posix, Float ) -> Svg msg
-yAxis model =
-    Axis.left [ Axis.tickCount 2 ] (yScale model)
+yAxis : Bool -> List ( Posix, Float ) -> Svg msg
+yAxis small model =
+    Axis.left [ Axis.tickCount 2 ] (yScale small model)
 
 
-column : (Posix -> String) -> BandScale Posix -> ContinuousScale Float -> ( Posix, Float ) -> Svg msg
-column xFormat scalex scaley ( date, value ) =
+column : Bool -> (Posix -> String) -> BandScale Posix -> ContinuousScale Float -> ( Posix, Float ) -> Svg msg
+column small xFormat scalex scaley ( date, value ) =
     g [ class [ "column" ] ]
         [ rect
             [ x <| Scale.convert scalex date
             , y <| Scale.convert scaley value
             , width <| Scale.bandwidth scalex
-            , height <| h - Scale.convert scaley value - 2 * padding
+            , height <| (h small)- Scale.convert scaley value - 2 * (padding small)
             ]
             []
         , text_
@@ -84,24 +96,26 @@ type alias BarchartOptions =
     , xLabel : String
     , xFormat : Posix -> String
     , xTicks : Int
+    , small : Bool
     }
 
 barchart: BarchartOptions -> Svg msg
-barchart {model,className, xLabel, xFormat, xTicks } =
-    svg
-        [ viewBox 0 0 w h
+barchart {model,className, xLabel, xFormat, xTicks, small } =
+    let pad = padding small
+    in svg
+        [ viewBox 0 0 w (h small)
         , class [ "barchart-chart", className ]
         ]
-        [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
-            [ xAxis xFormat xTicks model, text_ [ x (w - 2*padding), y 70, class [ "axis" ] ] [ text xLabel ] ]
-        , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis model
+        [ g [ transform [ Translate (pad  - 1) ((h small) - pad) ] ]
+            [ xAxis small xFormat xTicks model, text_ [ x (w - 2*pad), y 70, class [ "axis" ] ] [ text xLabel ] ]
+        , g [ transform [ Translate (pad - 1) pad ] ]
+            [ yAxis small model
             , text_
                 [ x 60 , y -30 , class [ "axis" ] ]
                 [ text "Crashes" ]
             ]
-        , g [ transform [ Translate padding padding ], class [ "series" ] ] <|
-            List.map (column xFormat (xScale model) (yScale model)) model
+        , g [ transform [ Translate pad pad ], class [ "series" ] ] <|
+            List.map (column small xFormat (xScale small model) (yScale small model)) model
         ]
 
 

@@ -24,26 +24,38 @@ w =
     900
 
 
-h : Float
-h =
+h small = if small then hs else hb
+
+hb : Float
+hb =
     350
 
 
-padding : Float
-padding =
+hs : Float
+hs = 200
+
+
+padding small = if small then paddingSmall else paddingBig
+
+paddingSmall : Float
+paddingSmall =
+    20
+
+paddingBig : Float
+paddingBig =
     50
 
 
-xScale : Model -> ContinuousScale Posix
-xScale model =
-    Scale.time Time.utc ( 0 , w - 2 * padding ) (List.map Tuple.first model 
+xScale : Bool -> Model -> ContinuousScale Posix
+xScale small model =
+    Scale.time Time.utc ( 0 , w - 2 * (padding small) ) (List.map Tuple.first model 
                     |> extentBy Time.posixToMillis
                     |> Maybe.withDefault (Time.millisToPosix 0, Time.millisToPosix 1))
 
 
-yScale : Model -> ContinuousScale Float
-yScale model =
-    Scale.linear ( h - 2 * padding, 0 )
+yScale : Bool -> Model -> ContinuousScale Float
+yScale small model =
+    Scale.linear ( (h small) - 2 * (padding small), 0 )
         ( List.map Tuple.second model
             |> extent
             |> Maybe.withDefault (0,1)
@@ -51,14 +63,14 @@ yScale model =
         )
 
 
-xAxis : Model -> Svg msg
-xAxis model =
-    Axis.bottom [ Axis.tickCount 12, Axis.tickFormat monthFormat ] (xScale model)
+xAxis : Bool -> Model -> Svg msg
+xAxis small model =
+    Axis.bottom [ Axis.tickCount 12, Axis.tickFormat monthFormat ] (xScale small model)
 
 
-yAxis : Model -> Svg msg
-yAxis model =
-    Axis.left [ Axis.tickCount 5 ] (yScale model)
+yAxis : Bool -> Model -> Svg msg
+yAxis small model =
+    Axis.left [ Axis.tickCount 5 ] (yScale small model)
 
 
 transformToLineData :
@@ -70,42 +82,44 @@ transformToLineData xsl ysl ( x, y ) =
     Just ( Scale.convert xsl x, Scale.convert ysl y )
 
 
-plotline : Model -> Path
-plotline model =
+plotline : Bool -> Model -> Path
+plotline small model =
     let
         x =
-            xScale model
+            xScale small model
 
         y =
-            yScale model
+            yScale small model
     in
     List.map (transformToLineData x y) model
         |> Shape.line Shape.monotoneInXCurve
 
 
-linechart : String -> String -> Model -> Svg msg
-linechart className label model =
-    svg [ viewBox 0 0 w h
+linechart : Bool -> String -> String -> Model -> Svg msg
+linechart small className label model =
+    let pad = padding small
+    in svg [ viewBox 0 0 w (h small)
     , class [ "linechart-chart", className ] 
     ]
-        [ g [] <| List.indexedMap (xGridLine <| xScale model) <| Scale.ticks (xScale model) 12
-        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
-            [ xAxis model ]
-        , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis model ]
-        , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            [ Path.element (plotline model) [ stroke (Color.rgb 1 0 0), strokeWidth 5, fill FillNone ]
+        [ g [] <| List.indexedMap (xGridLine small <| xScale small model) <| Scale.ticks (xScale small model) 12
+        , g [ transform [ Translate (pad - 1) ((h small) - pad) ] ]
+            [ xAxis small model ]
+        , g [ transform [ Translate (pad - 1) pad ] ]
+            [ yAxis small model ]
+        , g [ transform [ Translate pad pad ], class [ "series" ] ]
+            [ Path.element (plotline small model) [ stroke (Color.rgb 1 0 0), strokeWidth 5, fill FillNone ]
             ]
         ]
 
 
-xGridLine : ContinuousScale Posix -> Int -> Posix -> Svg msg
-xGridLine scale index tick =
-    line
-        [ y1 padding
-        , y2 (h - padding)
-        , x1 ((Scale.convert scale tick) + padding) 
-        , x2 ((Scale.convert scale tick) + padding)
+xGridLine : Bool -> ContinuousScale Posix -> Int -> Posix -> Svg msg
+xGridLine small scale index tick =
+    let pad = padding small
+    in line
+        [ y1 pad
+        , y2 ((h small) - pad)
+        , x1 ((Scale.convert scale tick) + pad) 
+        , x2 ((Scale.convert scale tick) + pad)
         , stroke Color.grey
         , strokeWidth 3
         , strokeDasharray "4"

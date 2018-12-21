@@ -25,6 +25,7 @@ type alias Model =
     , trends : List Crash
     , activeLabel : Maybe String
     , activeStep : Int
+    , small : Bool
     }
 
 
@@ -33,17 +34,18 @@ type alias Config =
     , nym : Value
     , periods : Value
     , trends : Value
+    , small : Bool
     }
 
 
 init : Config -> ( Model, Cmd Msg )
-init { article, nym, periods, trends } =
+init { article, nym, periods, trends, small } =
     let
         dec v =
             decodeValue (list jsonDecCrash) v
                 |> Result.withDefault []
     in
-    ( Model article (dec nym) (dec periods) (dec trends) Nothing -1, Cmd.none )
+    ( Model article (dec nym) (dec periods) (dec trends) Nothing 0 small, Cmd.none )
 
 
 
@@ -106,7 +108,7 @@ nymBarcharts model visible =
         barChart cls label d =
             div [ class "barchart" ]
                 [ div [ class "label" ] [ text label ]
-                , barchart <| BarchartOptions d cls "Year" dateFormat 3
+                , barchart <| BarchartOptions d cls "Year" dateFormat 3 model.small
                 ]
     in
     div
@@ -146,7 +148,7 @@ periodBarcharts model visible =
         barChart cls label d =
             div [ class "barchart" ]
                 [ div [ class "label" ] [ text label ]
-                , barchart <| BarchartOptions d cls "Year" dayFormat 9
+                , barchart <| BarchartOptions d cls "Year" dayFormat 9 model.small
                 ]
     in
     div
@@ -187,7 +189,7 @@ trendCharts model visible =
         lineChart cls label d =
             div [ class "linechart" ]
                 [ div [ class "label" ] [ text label ]
-                , linechart cls "Day" d
+                , linechart model.small cls "Day" d
                 ]
     in
     div

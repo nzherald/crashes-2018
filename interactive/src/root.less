@@ -39,6 +39,10 @@
 }
 #outro {
   margin-top: 32px;
+  p {
+    margin-left: 10px;
+    max-width: 600px;
+  }
 }
 /* scrollama */
 #scroll {
@@ -46,21 +50,95 @@
   .chart-title {
     text-align: center;
     width: 100%;
-    font-family: 'Stag Book';
+    font-family: "Stag Book";
     font-size: 22px;
   }
   .chart-subtitle {
     text-align: center;
     width: 100%;
     font-size: 15px;
-
-
   }
   .quartet {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     width: 100%;
+
+    .linechart {
+      .linechart-chart.fatal {
+        .series {
+          path {
+            stroke: rgb(139, 0, 0);
+          }
+        }
+      }
+      .linechart-chart.serious{
+        .series {
+          path {
+          stroke: rgb(222, 63, 83);
+          }
+        }
+      }
+      .linechart-chart.minor {
+        .series {
+          path {
+            stroke: rgb(255, 165, 0); 
+          }
+        }
+      }
+      .linechart-chart {
+        .series {
+          path {
+          stroke: rgb(211, 211, 211);
+          }
+        }
+      }
+
+    }
+
+    .barchart {
+      .barchart-chart {
+        .column rect {
+          fill: rgba(211, 211, 211, 0.8);
+        }
+        .column text {
+          display: none;
+          font-family: "Stag Book";
+        }
+        .column:hover rect {
+          fill: rgb(211, 211, 211);
+        }
+        .column:hover text {
+          display: inline;
+        }
+      }
+      .barchart-chart.fatal {
+        .column rect {
+          fill: rgba(139, 0, 0, 0.7);
+        }
+        .column:hover rect {
+          fill: rgb(139, 0, 0);
+        }
+      }
+      .barchart-chart.serious {
+        .column rect {
+          fill: rgba(222, 63, 83, 0.8);
+        }
+        .column:hover rect {
+          fill: rgb(222, 63, 83);
+        }
+      }
+      .barchart-chart.minor {
+        .column rect {
+          fill: rgba(255, 165, 0, 0.8);
+        }
+        .column:hover rect {
+          fill: rgb(255, 165, 0);
+        }
+      }
+    }
+
+    .linechart,
     .barchart {
       flex: 1 0 300px;
       padding: 5px 10px;
@@ -72,45 +150,7 @@
         margin: 0 5px;
         color: white;
       }
-      .barchart-chart {
-        .column rect {
-          fill: rgba(211,211,211,0.8);
-        }
-        .column text {
-          display: none;
-          font-family: 'Stag Book';
-        }
-        .column:hover rect {
-          fill: rgb(211,211,211);
-        }
-        .column:hover text {
-          display: inline;
-        }
-      }
-      .barchart-chart.fatal {
-        .column rect {
-          fill: rgba(139, 0, 0, 0.8);
-        }
-        .column:hover rect {
-          fill: rgb(139, 0, 0);
-        }
-      }
-      .barchart-chart.serious {
-        .column rect {
-          fill: rgba(222,63,83,0.8);
-        }
-        .column:hover rect {
-          fill: rgb(222,63,83);
-        }
-      }
-      .barchart-chart.minor{
-        .column rect {
-          fill: rgba(255,165,0,0.8);
-        }
-        .column:hover rect {
-          fill: rgb(255,165,0);
-        }
-      }
+
       svg {
         padding: 10px;
         overflow: visible;
@@ -151,7 +191,11 @@
     top: 0;
     left: 0;
     right: 0;
+    bottom: 0;
     transition: opacity 1s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 .chart p {
@@ -176,7 +220,7 @@
   margin: 2rem 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: flex-start;
   color: rgba(200, 200, 200, 0.77);
   // border: 1px solid rgba(200, 200, 200, 0.77);
   transition: color, border 500ms ease-in-out;
@@ -188,4 +232,65 @@
 .step p {
   font-size: 16px;
   margin: 0;
+  flex: 1 1 100px;
+}
+
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(3) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(7) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(11) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(15) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(19) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(23) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(27) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(31) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(35) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(39) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(43) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.fatal > g.series > g:nth-child(47) > rect {
+  fill: rgb(139, 0, 0);
+}
+
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(3) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(7) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(11) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(15) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(19) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(23) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(27) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(31) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(35) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(39) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(43) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.serious > g.series > g:nth-child(47) > rect {
+  fill: rgb(222, 63, 83);
+}
+
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(3) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(7) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(11) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(15) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(19) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(23) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(27) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(31) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(35) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(39) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(43) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart.minor > g.series > g:nth-child(47) > rect {
+  fill: rgb(255, 165, 0);
+}
+
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(3) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(7) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(11) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(15) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(19) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(23) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(27) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(31) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(35) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(39) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(43) > rect,
+#period-chart > div.quartet > .barchart > svg.barchart-chart > g.series > g:nth-child(47) > rect {
+  fill: rgb(211, 211, 211);
 }

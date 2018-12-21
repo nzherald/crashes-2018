@@ -22,6 +22,7 @@ type alias Model =
     { article : ScrollyArticle
     , nym : List Crash
     , periods : List Crash
+    , trends : List Crash
     , activeLabel : Maybe String
     , activeStep : Int
     }
@@ -31,17 +32,18 @@ type alias Config =
     { article : ScrollyArticle
     , nym : Value
     , periods : Value
+    , trends : Value
     }
 
 
 init : Config -> ( Model, Cmd Msg )
-init { article, nym, periods } =
+init { article, nym, periods, trends } =
     let
         dec v =
             decodeValue (list jsonDecCrash) v
                 |> Result.withDefault []
     in
-    ( Model article (dec nym) (dec periods) Nothing -1, Cmd.none )
+    ( Model article (dec nym) (dec periods) (dec trends) Nothing -1, Cmd.none )
 
 
 
@@ -89,6 +91,7 @@ view model =
                 [ div [ class "chart" ]
                     [ nymBarcharts model (model.activeStep == 0)
                     , periodBarcharts model (model.activeStep == 1)
+                    , trendCharts model (model.activeStep == 2 || model.activeStep == 3)
                     ]
                 ]
             , div [ class "scroll__text" ]
@@ -114,6 +117,12 @@ nymBarcharts model visible =
 
             else
                 "0"
+        , style "pointer-events" <|
+            if visible then
+                "inherit"
+
+            else
+                "none"
         ]
         [ div
             [ class "chart-title" ]
@@ -142,12 +151,19 @@ periodBarcharts model visible =
     in
     div
         [ class "step-chart"
+        , id "period-chart"
         , style "opacity" <|
             if visible then
                 "1"
 
             else
                 "0"
+        , style "pointer-events" <|
+            if visible then
+                "inherit"
+
+            else
+                "none"
         ]
         [ div
             [ class "chart-title" ]
@@ -162,6 +178,46 @@ periodBarcharts model visible =
             , barChart "serious" "Serious Injury" <| List.map (\d -> ( d.time, d.serious )) model.periods
             , barChart "minor" "Minor Injury" <| List.map (\d -> ( d.time, d.minor )) model.periods
             , barChart "non" "Non-injury" <| List.map (\d -> ( d.time, d.nonInjury )) model.periods
+            ]
+        ]
+
+
+trendCharts model visible =
+    let
+        lineChart cls label d =
+            div [ class "linechart" ]
+                [ div [ class "label" ] [ text label ]
+                , linechart cls "Day" d
+                ]
+    in
+    div
+        [ class "step-chart"
+        , style "opacity" <|
+            if visible then
+                "1"
+
+            else
+                "0"
+        , style "pointer-events" <|
+            if visible then
+                "inherit"
+
+            else
+                "none"
+        ]
+        [ div
+            [ class "chart-title" ]
+            [ text "Daily Crashes" ]
+        , div
+            [ class "chart-subtitle" ]
+            [ text "Average number of crashes that occur per day since Jan 1, 2000" ]
+        , div
+            [ class "quartet"
+            ]
+            [ lineChart "fatal" "Fatal" <| List.map (\d -> ( d.time, d.fatal )) model.trends
+            , lineChart "serious" "Serious Injury" <| List.map (\d -> ( d.time, d.serious )) model.trends
+            , lineChart "minor" "Minor Injury" <| List.map (\d -> ( d.time, d.minor )) model.trends
+            , lineChart "non" "Non-injury" <| List.map (\d -> ( d.time, d.nonInjury )) model.trends
             ]
         ]
 
@@ -196,3 +252,5 @@ dayFormat =
 dateFormat : Posix -> String
 dateFormat =
     DateFormat.format [ DateFormat.yearNumberLastTwo ] Time.utc
+
+

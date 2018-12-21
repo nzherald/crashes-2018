@@ -119,11 +119,9 @@ daily.non <- crashes %>% filter(year(day) != 2018 & severity=='Non-injury') %>% 
 
 # There is a real discontinuity in the data between December and Janurary
 # My guess is that it is a data collection issue - but I'd like to explore it more later ...
-pred_daily <- function(daily) {
-  daily <- bind_rows(daily,daily %>% filter(yday(fakeDay) > 266) %>% mutate(fakeDay=fakeDay-years(1)))
-  daily <- bind_rows(daily,daily %>% filter(yday(fakeDay) <= 100) %>% mutate(fakeDay=fakeDay+years(1)))
-  daily.lo <- loess(count ~ as.numeric(fakeDay), daily)
-  predict(daily.lo)[101:466]
+pred_daily <- function(daily1) {
+  daily.lo <- loess(count ~ as.numeric(fakeDay), daily1)
+  round(predict(daily.lo),4)
 }
 
 pred.fatal <- pred_daily(daily.fatal)
@@ -131,8 +129,10 @@ pred.serious <- pred_daily(daily.serious)
 pred.minor <- pred_daily(daily.minor)
 pred.non <- pred_daily(daily.non)
 
-tibble(faketime=seq.Date(as.Date('2020-01-01'), as.Date('2020-12-31'), 1),
+trends <- tibble(faketime=seq.Date(as.Date('2020-01-01'), as.Date('2020-12-31'), 1),
        fatal=pred.fatal,
        minor=pred.minor,
        nonInjury=pred.non,
-       serious=pred.serious) %>% write_csv(here("data/daily_trend.csv"))
+       serious=pred.serious) 
+
+trends %>% write_csv(here("data/daily_trend.csv"))

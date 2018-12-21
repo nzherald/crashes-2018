@@ -4,13 +4,19 @@ import Axis
 import Color
 import Path exposing (Path)
 import Scale exposing (ContinuousScale)
+import Statistics exposing (extentBy, extent)
 import Shape
-import Time
-import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (class, fill, stroke, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (strokeWidth)
+import DateFormat
+import Time exposing (Posix)
+import TypedSvg exposing (g, svg, line)
+import TypedSvg.Attributes exposing (class, fill, stroke, transform, viewBox, strokeDasharray)
+import TypedSvg.Attributes.InPx exposing (strokeWidth, x1, x2, y1, y2)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Fill(..), Transform(..), percent)
+
+
+type alias Model =
+    List ( Posix, Float )
 
 
 w : Float
@@ -20,68 +26,92 @@ w =
 
 h : Float
 h =
-    450
+    350
 
 
 padding : Float
 padding =
-    30
+    50
 
 
-xScale : ContinuousScale Time.Posix
-xScale =
-    Scale.time Time.utc ( 0, w - 2 * padding ) ( Time.millisToPosix 1448928000000, Time.millisToPosix 1456790400000 )
+xScale : Model -> ContinuousScale Posix
+xScale model =
+    Scale.time Time.utc ( 0 , w - 2 * padding ) (List.map Tuple.first model 
+                    |> extentBy Time.posixToMillis
+                    |> Maybe.withDefault (Time.millisToPosix 0, Time.millisToPosix 1))
 
 
-yScale : ContinuousScale Float
-yScale =
-    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
-
-
-xAxis : List ( Time.Posix, Float ) -> Svg msg
-xAxis model =
-    Axis.bottom [ Axis.tickCount (List.length model) ] xScale
-
-
-yAxis : Svg msg
-yAxis =
-    Axis.left [ Axis.tickCount 5 ] yScale
-
-
-transformToLineData : ( Time.Posix, Float ) -> Maybe ( Float, Float )
-transformToLineData ( x, y ) =
-    Just ( Scale.convert xScale x, Scale.convert yScale y )
-
-
-tranfromToAreaData : ( Time.Posix, Float ) -> Maybe ( ( Float, Float ), ( Float, Float ) )
-tranfromToAreaData ( x, y ) =
-    Just
-        ( ( Scale.convert xScale x, Tuple.first (Scale.rangeExtent yScale) )
-        , ( Scale.convert xScale x, Scale.convert yScale y )
+yScale : Model -> ContinuousScale Float
+yScale model =
+    Scale.linear ( h - 2 * padding, 0 )
+        ( List.map Tuple.second model
+            |> extent
+            |> Maybe.withDefault (0,1)
+            |> \(a,b) -> (a - (b-a)/4, b + (b-a)/4)
         )
 
 
-line : List ( Time.Posix, Float ) -> Path
-line model =
-    List.map transformToLineData model
+xAxis : Model -> Svg msg
+xAxis model =
+    Axis.bottom [ Axis.tickCount 12, Axis.tickFormat monthFormat ] (xScale model)
+
+
+yAxis : Model -> Svg msg
+yAxis model =
+    Axis.left [ Axis.tickCount 5 ] (yScale model)
+
+
+transformToLineData :
+    ContinuousScale Posix
+    -> ContinuousScale Float
+    -> ( Time.Posix, Float )
+    -> Maybe ( Float, Float )
+transformToLineData xsl ysl ( x, y ) =
+    Just ( Scale.convert xsl x, Scale.convert ysl y )
+
+
+plotline : Model -> Path
+plotline model =
+    let
+        x =
+            xScale model
+
+        y =
+            yScale model
+    in
+    List.map (transformToLineData x y) model
         |> Shape.line Shape.monotoneInXCurve
 
 
-area : List ( Time.Posix, Float ) -> Path
-area model =
-    List.map tranfromToAreaData model
-        |> Shape.area Shape.monotoneInXCurve
-
-
-linechart : List ( Time.Posix, Float ) -> Svg msg
-linechart model =
-    svg [ viewBox 0 0 w h ]
-        [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
+linechart : String -> String -> Model -> Svg msg
+linechart className label model =
+    svg [ viewBox 0 0 w h
+    , class [ "linechart-chart", className ] 
+    ]
+        [ g [] <| List.indexedMap (xGridLine <| xScale model) <| Scale.ticks (xScale model) 12
+        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis model ]
         , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis ]
+            [ yAxis model ]
         , g [ transform [ Translate padding padding ], class [ "series" ] ]
-            [ Path.element (area model) [ strokeWidth 3, fill <| Fill <| Color.rgba 1 0 0 0.54 ]
-            , Path.element (line model) [ stroke (Color.rgb 1 0 0), strokeWidth 3, fill FillNone ]
+            [ Path.element (plotline model) [ stroke (Color.rgb 1 0 0), strokeWidth 5, fill FillNone ]
             ]
         ]
+
+
+xGridLine : ContinuousScale Posix -> Int -> Posix -> Svg msg
+xGridLine scale index tick =
+    line
+        [ y1 padding
+        , y2 (h - padding)
+        , x1 ((Scale.convert scale tick) + padding) 
+        , x2 ((Scale.convert scale tick) + padding)
+        , stroke Color.grey
+        , strokeWidth 3
+        , strokeDasharray "4"
+        ]
+        []
+
+monthFormat : Posix -> String
+monthFormat =
+    DateFormat.format [ DateFormat.monthNameAbbreviated ] Time.utc

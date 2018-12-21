@@ -9,6 +9,7 @@ import {Elm} from "./Main.elm"
 import article from './article.json'
 import nym from './nym_yearly.json'
 import periods from './xmas_periods.json'
+import trends from './daily_trend'
 
 
 function initScrollama(app) {
@@ -65,6 +66,7 @@ function initScrollama(app) {
 				graphic: '.scroll__graphic',
 				text: '.scroll__text',
 				step: '.scroll__text .step',
+				offset: 0.5,
 				debug: false,
 			})
 				.onStepEnter(handleStepEnter)
@@ -82,7 +84,7 @@ class Main {
         document.getElementById('root').innerHTML = '<div id="elm"></div>'
         var app = Elm.Main.init({
             node: document.getElementById('elm'),
-            flags: { article, nym, periods }
+            flags: { article, nym, periods, trends }
           });
         this.fadeOut()
         initScrollama(app)

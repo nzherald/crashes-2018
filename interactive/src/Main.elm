@@ -3,6 +3,7 @@ port module Main exposing (Model, Msg(..), init, main, update, view)
 import App.BarChart exposing (..)
 import App.DataTypes exposing (..)
 import App.LineChart exposing (..)
+import App.XmasGrid exposing (..)
 import Browser
 import DateFormat
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
@@ -101,7 +102,10 @@ view model =
             , div [ class "scroll__text" ]
                 (model |> .article |> .sections |> List.indexedMap step)
             ]
-        , section [ id "outro" ] (List.map (\s -> toHtml [] s.text) <| .outro <| .article <| model)
+        , section [ id "outro" ] [
+            div [] (List.map (\s -> toHtml [] s.text) <| .outro <| .article <| model)
+            , xmasGrid 600 1200 model.hourly
+        ]
         ]
 
 

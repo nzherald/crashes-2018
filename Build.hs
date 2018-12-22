@@ -4,6 +4,7 @@ import           Development.Shake.Command
 import           Development.Shake.FilePath
 import           Development.Shake.Util
 
+import Control.Lens
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as BL
 import           Crypto.Hash.MD5                          ( hashlazy )
@@ -16,6 +17,7 @@ import           Data.Csv                                 ( encodeDefaultOrdered
                                                           )
 import qualified Data.Csv                      as Csv
 import qualified Data.Vector                   as V
+import Data.List (groupBy)
 
 import           Rules
 import           Lib
@@ -27,8 +29,9 @@ generatedElm = "interactive/src/App/DataTypes.elm"
 articleText = "interactive/src/article.json"
 
 
-dataFiles = ("data" </> "hourly+xmas.csv") : map (\f -> "data" </> "crash+" ++ f)
-                ["yearly.csv", "nym_yearly.csv", "xmas_periods.csv", "daily_trend.csv"]
+dataFiles = ("data" </> "hourly+xmas.csv") : map
+    (\f -> "data" </> "crash+" ++ f)
+    ["yearly.csv", "nym_yearly.csv", "xmas_periods.csv", "daily_trend.csv"]
 
 
 main :: IO ()
@@ -139,10 +142,19 @@ main = do
             let base = takeBaseName out
                 src  = "data" </> addExtension base "csv"
             need [src]
-            cmd_ $ "touch " ++ out
-
-
+            liftIO $ do
+                h <- BL.readFile "data/hourly+xmas.csv"
+                let (Right d) = Csv.decode Csv.HasHeader h
+                    dd = (V.toList d::[HourRaw])
+                    g = groupBy (\a b -> a ^. xmasYear  == b ^. xmasYear) dd
+                    gg = map (\y -> groupBy (\a b -> a ^. day == b ^.day) y) g
+                BL.writeFile out $ encode $ map xmas gg
   where
+    xmas :: [[HourRaw]] -> Xmas
+    xmas hr = Xmas (hr ^?! _head . _head . xmasYear) $ map xmasDay hr
+    xmasDay :: [HourRaw] -> XmasDay
+    xmasDay hr = XmasDay (hr ^?! _head . day) $ map xmasHour hr
+    xmasHour (HourRaw _ _ h f s) = XmasHour h f s 
     unzip bld z o = do
         need [z]
         command_ [] "unzip" ["-o", z, "-d", bld]

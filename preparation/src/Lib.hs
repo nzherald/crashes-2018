@@ -8,7 +8,7 @@ module Lib
     , dummyData
     , rainfall
     , article
-    , Crash(..)
+    , module Types
     ) where
 
 import           Data.Aeson                      as A

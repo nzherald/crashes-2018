@@ -9,7 +9,10 @@ import {Elm} from "./Main.elm"
 import article from './article.json'
 import nym from './crash+nym_yearly.json'
 import periods from './crash+xmas_periods.json'
-import trends from './crash+daily_trend'
+import trends from './crash+daily_trend.json'
+import hourly from './hourly+xmas.json'
+
+console.log(hourly)
 
 
 function initScrollama(app) {

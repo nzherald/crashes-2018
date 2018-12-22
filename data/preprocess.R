@@ -167,7 +167,7 @@ hourly <- crashes %>%
   spread(severity, count, fill=0) %>%
   select(day,hour,Fatal,Serious) %>%
   right_join(allHours %>% filter(xmasYear >= 2000 & xmasYear <= 2017 & xmas), by=c("hour","day")) %>%
-  select(time, day, hour, Fatal, Serious) %>%
-  arrange(time)
+  select(xmasYear, day, hour, Fatal, Serious) %>%
+  arrange(day,hour)
 
-hourly %>% write_csv(here("data/hourly+xmas.csv"))
+hourly %>% write_csv(here("data/hourly+xmas.csv"), na="")

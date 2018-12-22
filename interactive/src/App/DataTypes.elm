@@ -84,3 +84,66 @@ jsonEncCrash  val =
    ]
 
 
+
+type alias Xmas  =
+   { year: Int
+   , days: (List XmasDay)
+   }
+
+jsonDecXmas : Json.Decode.Decoder ( Xmas )
+jsonDecXmas =
+   Json.Decode.succeed (\pyear pdays -> {year = pyear, days = pdays})
+   |> required "year" (Json.Decode.int)
+   |> required "days" (Json.Decode.list (jsonDecXmasDay))
+
+jsonEncXmas : Xmas -> Value
+jsonEncXmas  val =
+   Json.Encode.object
+   [ ("year", Json.Encode.int val.year)
+   , ("days", (Json.Encode.list jsonEncXmasDay) val.days)
+   ]
+
+
+
+type alias XmasDay  =
+   { day: String
+   , hours: (List XmasHour)
+   }
+
+jsonDecXmasDay : Json.Decode.Decoder ( XmasDay )
+jsonDecXmasDay =
+   Json.Decode.succeed (\pday phours -> {day = pday, hours = phours})
+   |> required "day" (Json.Decode.string)
+   |> required "hours" (Json.Decode.list (jsonDecXmasHour))
+
+jsonEncXmasDay : XmasDay -> Value
+jsonEncXmasDay  val =
+   Json.Encode.object
+   [ ("day", Json.Encode.string val.day)
+   , ("hours", (Json.Encode.list jsonEncXmasHour) val.hours)
+   ]
+
+
+
+type alias XmasHour  =
+   { hour: Int
+   , fatal: (Maybe Int)
+   , serious: (Maybe Int)
+   }
+
+jsonDecXmasHour : Json.Decode.Decoder ( XmasHour )
+jsonDecXmasHour =
+   Json.Decode.succeed (\phour pfatal pserious -> {hour = phour, fatal = pfatal, serious = pserious})
+   |> required "hour" (Json.Decode.int)
+   |> fnullable "fatal" (Json.Decode.int)
+   |> fnullable "serious" (Json.Decode.int)
+
+jsonEncXmasHour : XmasHour -> Value
+jsonEncXmasHour  val =
+   Json.Encode.object
+   [ ("hour", Json.Encode.int val.hour)
+   , ("fatal", (maybeEncode (Json.Encode.int)) val.fatal)
+   , ("serious", (maybeEncode (Json.Encode.int)) val.serious)
+   ]
+
+

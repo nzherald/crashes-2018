@@ -32,3 +32,4 @@ executable build
                      , postgresql-simple
                      , cassava
                      , vector
+                     , lens

@@ -48,6 +48,33 @@ data ScrollyArticle
     , _outro :: [ScrollySection] 
     } deriving (Show, Eq)
 
+data XmasHour
+    = XmasHour 
+    { _hour :: Int 
+    , _fatal :: Maybe Int
+    , _serious :: Maybe Int
+    } deriving (Show, Eq)
+
+data XmasDay
+    = XmasDay
+    { _day :: Text
+    , _hours :: [XmasHour]
+    } deriving (Show, Eq)
+
+data Xmas
+    = Xmas
+    { _year :: Int
+    , _days :: [XmasDay]
+    } deriving (Show, Eq)
+
+data HourRaw
+    = HourRaw
+    { _xmasYear :: Int
+    , _day :: Text
+    , _hour :: Int
+    , _fatal :: Maybe Int
+    , _serious :: Maybe Int
+    } deriving (Show, Eq, Generic, Csv.FromRecord)
 
 data Crash
     = Crash
@@ -102,13 +129,23 @@ jsonEncPosix = Json.Encode.string << fromTime
             [ DefineElm (Proxy :: Proxy ScrollySection)
             , DefineElm (Proxy :: Proxy ScrollyArticle)
             , DefineElm (Proxy :: Proxy Crash)
+            , DefineElm (Proxy :: Proxy Xmas)
+            , DefineElm (Proxy :: Proxy XmasDay)
+            , DefineElm (Proxy :: Proxy XmasHour)
             ]
 
 deriveBoth elmOptions ''Rainfall
 deriveBoth elmOptions ''ScrollySection
 deriveBoth elmOptions ''ScrollyArticle
 deriveBoth elmOptions ''Crash
+deriveBoth elmOptions ''Xmas
+deriveBoth elmOptions ''XmasDay
+deriveBoth elmOptions ''XmasHour
 makeFieldsNoPrefix ''Rainfall
 makeFieldsNoPrefix ''ScrollySection
 makeFieldsNoPrefix ''ScrollyArticle
 makeFieldsNoPrefix ''Crash
+makeFieldsNoPrefix ''Xmas
+makeFieldsNoPrefix ''XmasDay
+makeFieldsNoPrefix ''XmasHour
+makeFieldsNoPrefix ''HourRaw

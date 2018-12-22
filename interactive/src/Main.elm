@@ -23,6 +23,7 @@ type alias Model =
     , nym : List Crash
     , periods : List Crash
     , trends : List Crash
+    , hourly : List Xmas
     , activeLabel : Maybe String
     , activeStep : Int
     , small : Bool
@@ -34,18 +35,19 @@ type alias Config =
     , nym : Value
     , periods : Value
     , trends : Value
+    , hourly : List Xmas
     , small : Bool
     }
 
 
 init : Config -> ( Model, Cmd Msg )
-init { article, nym, periods, trends, small } =
+init { article, nym, periods, trends, hourly, small } =
     let
         dec v =
             decodeValue (list jsonDecCrash) v
                 |> Result.withDefault []
     in
-    ( Model article (dec nym) (dec periods) (dec trends) Nothing 0 small, Cmd.none )
+    ( Model article (dec nym) (dec periods) (dec trends) hourly Nothing 0 small, Cmd.none )
 
 
 

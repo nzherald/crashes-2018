@@ -20,6 +20,29 @@ jan_season <- function(day, hour, end) {
   )
 }
 
+allHours <- tibble(time = seq.POSIXt(as.POSIXct('2000-01-01'), as.POSIXct('2018-12-31'), "hour")) %>%
+  mutate(day = as.Date(time,tz = "Pacific/Auckland"),
+         hour = hour(time),
+         xmasEve = case_when(
+    month(day) != 1 ~ xmas(day),
+    month(day) == 1 ~ case_when(
+      wday(prev_xmas(day)) %in% c(1,2,7) ~ jan_season(day, hour, 3),
+      wday(prev_xmas(day)) == 2 ~ jan_season(day, hour, 4),
+      TRUE ~ jan_season(day, hour, 5)
+    )
+  ),
+  xmas = case_when(
+    month(day) == 1 & year(day) != year(xmasEve) ~ TRUE,
+    month(day) == 12 & mday(day) > 24 ~ TRUE,
+    month(day) == 12 & mday(day) == 24 & hour >= 16 ~ TRUE,
+    TRUE ~ FALSE
+  ),
+  xmasYear = case_when(
+    month(day) <= 6 ~ year(day) - 1,
+    TRUE ~ year(day)
+  )
+  )
+
 crashes <- tbl(db, "crashes") %>%
   collect() %>%
   mutate(xmasEve = case_when(
@@ -90,7 +113,7 @@ nym_yearly %>%
   spread(Severity, Count, fill=0) %>%
   rename_all(tolower) %>%
   rename(nonInjury=`non-injury`) %>%
-  write_csv(here('data/nym_yearly.csv'))
+  write_csv(here('data/crash+nym_yearly.csv'))
 
 kable(newyears %>% filter(period==0) %>% group_by(severity) %>% summarise(count=sum(count)))
 
@@ -100,7 +123,7 @@ crashes %>% filter(xmas & day > '2000-02-02') %>%
   spread(severity, count, fill=0) %>%
   rename_all(tolower) %>%
   rename(nonInjury=`non-injury`) %>%
-  write_csv(here('data/yearly.csv'))
+  write_csv(here('data/crash+yearly.csv'))
 
 crashes %>% filter(xmas & period != -1) %>%
   group_by(fakeTime,severity) %>%
@@ -108,7 +131,7 @@ crashes %>% filter(xmas & period != -1) %>%
   spread(severity, count, fill=0) %>%
   rename_all(tolower) %>%
   rename(nonInjury=`non-injury`) %>%
-  write_csv(here('data/xmas_periods.csv'))
+  write_csv(here('data/crash+xmas_periods.csv'))
 
 # predictions
 
@@ -135,4 +158,16 @@ trends <- tibble(faketime=seq.Date(as.Date('2020-01-01'), as.Date('2020-12-31'),
        nonInjury=pred.non,
        serious=pred.serious) 
 
-trends %>% write_csv(here("data/daily_trend.csv"))
+trends %>% write_csv(here("data/crash+daily_trend.csv"))
+
+# Christmas hourly
+
+hourly <- crashes %>%
+  filter(severity %in% c('Fatal','Serious') & xmas & xmasYear >= 2000) %>%
+  spread(severity, count, fill=0) %>%
+  select(day,hour,Fatal,Serious) %>%
+  right_join(allHours %>% filter(xmasYear >= 2000 & xmasYear <= 2017 & xmas), by=c("hour","day")) %>%
+  select(time, day, hour, Fatal, Serious) %>%
+  arrange(time)
+
+hourly %>% write_csv(here("data/hourly+xmas.csv"))

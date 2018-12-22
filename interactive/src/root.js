@@ -7,9 +7,9 @@ import "./root.less"
 import {Elm} from "./Main.elm"
 
 import article from './article.json'
-import nym from './nym_yearly.json'
-import periods from './xmas_periods.json'
-import trends from './daily_trend'
+import nym from './crash+nym_yearly.json'
+import periods from './crash+xmas_periods.json'
+import trends from './crash+daily_trend'
 
 
 function initScrollama(app) {

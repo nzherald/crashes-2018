@@ -27,7 +27,7 @@ generatedElm = "interactive/src/App/DataTypes.elm"
 articleText = "interactive/src/article.json"
 
 
-dataFiles = map (\f -> "data" </> f)
+dataFiles = ("data" </> "hourly+xmas.csv") : map (\f -> "data" </> "crash+" ++ f)
                 ["yearly.csv", "nym_yearly.csv", "xmas_periods.csv", "daily_trend.csv"]
 
 
@@ -99,9 +99,10 @@ main = do
             need
                 $  [ "data"
                    , articleText
-                   , "interactive" </> "src" </> "nym_yearly.json"
-                   , "interactive" </> "src" </> "xmas_periods.json"
-                   , "interactive" </> "src" </> "daily_trend.json"
+                   , "interactive" </> "src" </> "crash+nym_yearly.json"
+                   , "interactive" </> "src" </> "crash+xmas_periods.json"
+                   , "interactive" </> "src" </> "crash+daily_trend.json"
+                   , "interactive" </> "src" </> "hourly+xmas.json"
                    , generatedElm
                    , webpackCli
                    ]
@@ -123,7 +124,7 @@ main = do
             need ["data" </> "preprocess.R"]
             cmd_ ("Rscript data/preprocess.R" :: String)
 
-        "interactive/src/*.json" %> \out -> do
+        "interactive/src/crash+*.json" %> \out -> do
             let base = takeBaseName out
                 src  = "data" </> addExtension base "csv"
             need [src]
@@ -133,6 +134,14 @@ main = do
                         Right csv -> V.toList csv
                         Left  csv -> []
                 BL.writeFile out $ encode (ll :: [Crash])
+
+        "interactive/src/hourly+*.json" %> \out -> do
+            let base = takeBaseName out
+                src  = "data" </> addExtension base "csv"
+            need [src]
+            cmd_ $ "touch " ++ out
+
+
   where
     unzip bld z o = do
         need [z]

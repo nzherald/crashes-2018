@@ -3,6 +3,9 @@ module App.XmasGrid exposing (xmasGrid)
 import App.DataTypes exposing (..)
 import App.Msg exposing (..)
 import Color exposing (rgb255)
+import Html as H
+import Html.Attributes as A
+import Html.Events as E
 import Numeral exposing (format)
 import String.Extra exposing (toSentenceCase)
 import String.Format exposing (namedValue, value)
@@ -41,13 +44,13 @@ marginTop =
     70
 
 
-xmasGrid rw w h xmases activeDay =
+xmasGrid w h xmases activeDay =
     let
         dayHeight =
             (h - marginTop) / (toFloat <| List.length xmases)
 
         dayWidth =
-            if rw > 700 then
+            if w > 700 then
                 ((w * 0.5) - (2 * margin)) / 13
 
             else
@@ -101,10 +104,11 @@ xmasGrid rw w h xmases activeDay =
                 )
 
         dot base col i =
-            circle
-                [ cx (toFloat (base + i) * (hourHeight * 1.1) + hourHeight)
+            let rr = (Basics.min (hourHeight * 0.45) ((dayWidth - hourHeight) / 9))
+            in circle
+                [ cx (toFloat (base + (i-1)) * (rr * 2.2) + (0.5*hourHeight))
                 , cy (hourHeight * 0.5)
-                , r (hourHeight * 0.45)
+                , r rr
                 , fill <| Fill col
                 ]
                 []
@@ -160,7 +164,8 @@ xmasGrid rw w h xmases activeDay =
                 , y (toFloat i * hourHeight)
                 , textAnchor AnchorEnd
                 , alignmentBaseline AlignmentCentral
-                , fontSize 4
+                , fontSize 3.5
+                , fontFamily [ "Stag Sans" ]
                 ]
                 [ text <| (format "00" <| toFloat l) ++ ":00" ]
 
@@ -198,11 +203,14 @@ xmasGrid rw w h xmases activeDay =
                 ( _, 0 ) ->
                     "{{ }} fatal crashes" |> value (word fatal)
 
+                ( 1, 1 ) ->
+                    "one fatal and one serious injury crash" |> value (word serious)
+
                 ( 1, _ ) ->
                     "one fatal and {{ }} serious injury crashes" |> value (word serious)
 
                 ( _, 1 ) ->
-                    "{{ }} fatal and one serious injury" |> value (word fatal)
+                    "{{ }} fatal and one serious injury crashes" |> value (word fatal)
 
                 _ ->
                     "{{ fatal }} fatal and {{ serious }} serious injury crashes"
@@ -228,59 +236,90 @@ xmasGrid rw w h xmases activeDay =
                         serious =
                             List.map .serious active.hours |> List.sum
 
-                        dw = if rw > 700 then
-                            w * 0.5
-                            else w * 0.9
+                        dw =
+                            if w > 700 then
+                                w * 0.5
+
+                            else
+                                w * 0.7
                     in
-                    g
-                        [ transform
-                            [ Translate (if rw > 700 then dw + margin else 3*margin)
-                                (Basics.max marginTop ((toFloat i * dayHeight + marginTop) - 0.5 * dayHeight))
-                            ]
+                    H.div
+                        [ A.style "position" "absolute"
+                        , A.style "top"
+                            (String.fromFloat
+                                (Basics.max marginTop
+                                    ((toFloat i * dayHeight + marginTop) - 0.5 * dayHeight)
+                                )
+                                ++ "px"
+                            )
+                        , A.style "right" "0"
                         ]
-                        [ g []
-                            [ text_ []
+                        [ H.div
+                            [ A.style "border" "1px solid #333"
+                            , A.style "padding" "10px 20px"
+                            , A.style "margin" "20px"
+                            , A.style "max-width" (String.fromFloat dw ++ "px")
+                            , A.style "min-width" "280px"
+                            , A.style "background-color" "#F9F9F9"
+                            , A.class "detail"
+                            , E.onClick CloseDetail
+                            ]
+                            [ H.div [ A.class "close"]
+                            [ ]
+                            , H.div [ A.style "max-width" "400px" ]
                                 [ "On {{ day }} a total of {{ detail }} occurred."
                                     |> namedValue "day" active.day
                                     |> namedValue "detail" (detail fatal serious)
                                     |> toSentenceCase
                                     |> text
                                 ]
+                            , svg
+                                [ viewBox 0 0 (11.5 * dayWidth) (dayHeight * 3.1)
+                                ]
+                                [ g
+                                    []
+                                    [ g [ transform [ Translate 35 30, Scale 3 3 ] ]
+                                        (List.map hours active.hours
+                                            ++ (List.range 0 24 |> List.map (Basics.modBy 24) |> List.indexedMap hourLabels)
+                                            ++ List.indexedMap hourDetail active.hours
+                                        )
+                                    ]
+                                ]
                             ]
-                        , g [ transform [ Translate 0 30, Scale 3 3 ] ]
-                            (List.map hours active.hours
-                                ++ (List.range 0 24 |> List.map (Basics.modBy 24) |> List.indexedMap hourLabels)
-                                ++ List.indexedMap hourDetail active.hours
-                            )
                         ]
 
                 Nothing ->
-                    g [] []
+                    H.div [] []
     in
-    svg [ viewBox 0 0 w h, class [ "xmas-grid" ] ]
-        [ g []
-            [ labels
-            , text_
-                [ y 10
-                , x (w * 0.34)
-                , textAnchor AnchorEnd
-                , fill <| Fill <| rgb255 131 0 0
-                , fontSize 13
-                , alignmentBaseline AlignmentCentral
+    H.div
+        [ A.style "position" "relative"
+        , A.style "overflow" "visible"
+        ]
+        [ svg [ viewBox 0 0 w h, class [ "xmas-grid" ] ]
+            [ g []
+                [ labels
+                , text_
+                    [ y 10
+                    , x (w * 0.34)
+                    , textAnchor AnchorEnd
+                    , fill <| Fill <| rgb255 131 0 0
+                    , fontSize 13
+                    , alignmentBaseline AlignmentCentral
+                    ]
+                    [ text "Fatal crash" ]
+                , circle [ cx (w * 0.36), cy 10, r 5, fill <| Fill <| rgb255 131 0 0 ] []
+                , text_
+                    [ y 10
+                    , x (w * 0.7)
+                    , textAnchor AnchorEnd
+                    , fill <| Fill <| rgb255 222 63 83
+                    , fontSize 13
+                    , alignmentBaseline AlignmentCentral
+                    ]
+                    [ text "Serious injury crash" ]
+                , circle [ cx (w * 0.72), cy 10, r 5, fill <| Fill <| rgb255 222 63 83 ] []
                 ]
-                [ text "Fatal crash" ]
-            , circle [ cx (w * 0.36), cy 10, r 5, fill <| Fill <| rgb255 131 0 0 ] []
-            , text_
-                [ y 10
-                , x (w * 0.7)
-                , textAnchor AnchorEnd
-                , fill <| Fill <| rgb255 222 63 83
-                , fontSize 13
-                , alignmentBaseline AlignmentCentral
-                ]
-                [ text "Serious injury crash" ]
-            , circle [ cx (w * 0.72), cy 10, r 5, fill <| Fill <| rgb255 222 63 83 ] []
+            , g [ transform [ Translate 0 marginTop ] ] (List.indexedMap xmas xmases)
             ]
-        , g [ transform [ Translate 0 marginTop ] ] (List.indexedMap xmas xmases)
         , highlight
         ]

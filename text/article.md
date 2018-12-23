@@ -82,4 +82,6 @@ It isn't surprising that there are more crashes overall during the wetter months
 
 # Outro one
 
-Below is a timeline showing when every fatal and serious injury crash has occurred during the last eighteen Christmas holiday periods.
+Below is a timeline showing when every fatal and serious injury crash has
+occurred during the last eighteen Christmas holiday periods. Click or tap
+on a day to see it in more detail.

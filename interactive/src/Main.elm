@@ -86,6 +86,8 @@ update msg model =
         RootSize (Ok { viewport }) ->
             ( { model | width = viewport.width }, Cmd.none )
 
+        CloseDetail -> ({model|activeDay=Nothing}, Cmd.none)
+
 
 
 ---- VIEW ----
@@ -129,7 +131,7 @@ view model =
                 , style "font-size" "24px"
                 ]
                 [ text "Hourly Fatal and Serious Injury Crashes" ]
-            , xmasGrid model.width model.width 2000 model.hourly model.activeDay
+            , xmasGrid model.width 2000 model.hourly model.activeDay
             ]
         ]
 

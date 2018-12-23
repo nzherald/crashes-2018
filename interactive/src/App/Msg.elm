@@ -10,3 +10,4 @@ type Msg
     | ShowDay (Int, XmasDay)
     | Size Int Int
     | RootSize (Result Dom.Error Dom.Viewport)
+    | CloseDetail

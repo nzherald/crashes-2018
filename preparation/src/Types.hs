@@ -51,8 +51,8 @@ data ScrollyArticle
 data XmasHour
     = XmasHour 
     { _hour :: Int 
-    , _fatal :: Maybe Int
-    , _serious :: Maybe Int
+    , _fatal :: Int
+    , _serious :: Int
     } deriving (Show, Eq)
 
 data XmasDay
@@ -72,8 +72,8 @@ data HourRaw
     { _xmasYear :: Int
     , _day :: Text
     , _hour :: Int
-    , _fatal :: Maybe Int
-    , _serious :: Maybe Int
+    , _fatal :: Int
+    , _serious :: Int
     } deriving (Show, Eq, Generic, Csv.FromRecord)
 
 data Crash

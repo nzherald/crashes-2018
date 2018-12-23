@@ -20,49 +20,40 @@ jan_season <- function(day, hour, end) {
   )
 }
 
+mutateTime <- function(x) {
+  x  %>%
+    mutate(
+           xmasEve = case_when(
+             month(day) != 1 ~ xmas(day),
+             month(day) == 1 ~ case_when(
+               wday(prev_xmas(day)) %in% c(1,2,7) ~ jan_season(day, hour, 3),
+               wday(prev_xmas(day)) == 2 ~ jan_season(day, hour, 4),
+               TRUE ~ jan_season(day, hour, 5)
+             )
+           ),
+           xmas = case_when(
+             month(day) == 1 & year(day) != year(xmasEve) ~ TRUE,
+             month(day) == 12 & mday(day) > 24 ~ TRUE,
+             month(day) == 12 & mday(day) == 24 & hour >= 16 ~ TRUE,
+             TRUE ~ FALSE
+           ),
+           xmasYear = case_when(
+             month(day) <= 6 ~ year(day) - 1,
+             TRUE ~ year(day)
+           ),
+  md = paste(month(day), mday(day), sep='-')
+    )
+}
+
 allHours <- tibble(time = seq.POSIXt(as.POSIXct('2000-01-01'), as.POSIXct('2018-12-31'), "hour")) %>%
   mutate(day = as.Date(time,tz = "Pacific/Auckland"),
-         hour = hour(time),
-         xmasEve = case_when(
-    month(day) != 1 ~ xmas(day),
-    month(day) == 1 ~ case_when(
-      wday(prev_xmas(day)) %in% c(1,2,7) ~ jan_season(day, hour, 3),
-      wday(prev_xmas(day)) == 2 ~ jan_season(day, hour, 4),
-      TRUE ~ jan_season(day, hour, 5)
-    )
-  ),
-  xmas = case_when(
-    month(day) == 1 & year(day) != year(xmasEve) ~ TRUE,
-    month(day) == 12 & mday(day) > 24 ~ TRUE,
-    month(day) == 12 & mday(day) == 24 & hour >= 16 ~ TRUE,
-    TRUE ~ FALSE
-  ),
-  xmasYear = case_when(
-    month(day) <= 6 ~ year(day) - 1,
-    TRUE ~ year(day)
-  )
-  )
+         hour = hour(time)) %>%
+  mutateTime()
 
 crashes <- tbl(db, "crashes") %>%
   collect() %>%
-  mutate(xmasEve = case_when(
-    month(day) != 1 ~ xmas(day),
-    month(day) == 1 ~ case_when(
-      wday(prev_xmas(day)) %in% c(1,2,7) ~ jan_season(day, hour, 3),
-      wday(prev_xmas(day)) == 2 ~ jan_season(day, hour, 4),
-      TRUE ~ jan_season(day, hour, 5)
-    )
-  ),
-  xmas = case_when(
-    month(day) == 1 & year(day) != year(xmasEve) ~ TRUE,
-    month(day) == 12 & mday(day) > 24 ~ TRUE,
-    month(day) == 12 & mday(day) == 24 & hour >= 16 ~ TRUE,
-    TRUE ~ FALSE
-  ),
-  xmasYear = case_when(
-    month(day) <= 6 ~ year(day) - 1,
-    TRUE ~ year(day)
-  ),
+  mutateTime() %>%
+  mutate(
   period = case_when(
     hour < 6 ~ 0,
     hour >= 6 & hour < 12 ~ 1,
@@ -70,7 +61,6 @@ crashes <- tbl(db, "crashes") %>%
     hour >= 16 ~ 3,
     TRUE ~ -1
   ),
-  md = paste(month(day), mday(day), sep='-'),
   fakeTime = case_when(
     period == -1 ~ ymd_h(paste(paste('1900', month(day), mday(day), sep='-'), 1)),
     month(day) == 12 ~ ymd_h(paste(paste('2019', month(day), mday(day), sep='-'), period * 6 + 3)),
@@ -167,7 +157,22 @@ hourly <- crashes %>%
   spread(severity, count, fill=0) %>%
   select(day,hour,Fatal,Serious) %>%
   right_join(allHours %>% filter(xmasYear >= 2000 & xmasYear <= 2017 & xmas), by=c("hour","day")) %>%
-  select(xmasYear, day, hour, Fatal, Serious) %>%
-  arrange(day,hour)
+  mutate(Fatal=coalesce(Fatal,0),Serious=coalesce(Serious,0))
 
-hourly %>% write_csv(here("data/hourly+xmas.csv"), na="")
+hourly  %>%
+  select(xmasYear, day, hour, Fatal, Serious) %>%
+  arrange(day,hour) %>% write_csv(here("data/hourly+xmas.csv"), na="")
+
+# Christmas hourly for all Christmas
+
+all_hourly <- hourly %>% 
+  mutate(dayOfXmas=day-xmasEve,Mday=mday(day),Month=as.character(month(day,label=T,abbr=T))) %>%
+  group_by(dayOfXmas,Mday,Month,hour) %>%
+  summarise(xmasYear=0,Fatal=sum(Fatal),Serious=sum(Serious)) %>%
+  arrange(dayOfXmas) %>%
+  mutate(day=paste(Mday,Month)) %>%
+  ungroup() 
+
+all_hourly %>%
+  select(xmasYear,day,hour,Fatal,Serious) %>%
+  write_csv(here("data/hourly+allxmas.csv"), na="")

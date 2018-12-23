@@ -127,23 +127,23 @@ jsonEncXmasDay  val =
 
 type alias XmasHour  =
    { hour: Int
-   , fatal: (Maybe Int)
-   , serious: (Maybe Int)
+   , fatal: Int
+   , serious: Int
    }
 
 jsonDecXmasHour : Json.Decode.Decoder ( XmasHour )
 jsonDecXmasHour =
    Json.Decode.succeed (\phour pfatal pserious -> {hour = phour, fatal = pfatal, serious = pserious})
    |> required "hour" (Json.Decode.int)
-   |> fnullable "fatal" (Json.Decode.int)
-   |> fnullable "serious" (Json.Decode.int)
+   |> required "fatal" (Json.Decode.int)
+   |> required "serious" (Json.Decode.int)
 
 jsonEncXmasHour : XmasHour -> Value
 jsonEncXmasHour  val =
    Json.Encode.object
    [ ("hour", Json.Encode.int val.hour)
-   , ("fatal", (maybeEncode (Json.Encode.int)) val.fatal)
-   , ("serious", (maybeEncode (Json.Encode.int)) val.serious)
+   , ("fatal", Json.Encode.int val.fatal)
+   , ("serious", Json.Encode.int val.serious)
    ]
 
 

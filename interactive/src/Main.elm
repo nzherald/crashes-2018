@@ -104,7 +104,7 @@ view model =
             ]
         , section [ id "outro" ] [
             div [] (List.map (\s -> toHtml [] s.text) <| .outro <| .article <| model)
-            , xmasGrid 600 1200 model.hourly
+            , xmasGrid 400 1800 model.hourly
         ]
         ]
 

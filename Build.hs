@@ -139,7 +139,7 @@ main = do
                 dd        = V.toList d :: [HourRaw]
                 g         = groupBy (\a b -> a ^. xmasYear == b ^. xmasYear) dd
                 gg = map (\y -> groupBy (\a b -> a ^. day == b ^. day) y) g
-            BL.writeFile out $ encode $ map xmas gg
+            BL.writeFile out $ encode $ reverse $ map xmas gg
     xmas :: [[HourRaw]] -> Xmas
     xmas hr = Xmas (hr ^?! _head . _head . xmasYear) $ map xmasDay hr
     xmasDay :: [HourRaw] -> XmasDay

@@ -49,12 +49,12 @@ article file = do
     t <- T.readFile file
     runIOorExplode $ do
         (Pandoc meta blks) <- readMarkdown
-            def { readerExtensions = pandocExtensions }
+            def { readerExtensions = enableExtension Ext_raw_html pandocExtensions }
             t
         let (_, _, rv) = go blks (Nothing, [], [])
         allSections <- reverse <$> mapM (\(t,pd) -> do
-            mt <- writeMarkdown def $ Pandoc nullMeta $ reverse pd
-            lt <- writePlain def $ Pandoc nullMeta [Plain t]
+            mt <- writeMarkdown def { writerExtensions = enableExtension Ext_raw_html pandocExtensions} $ Pandoc nullMeta $ reverse pd
+            lt <- writePlain def  $ Pandoc nullMeta [Plain t]
             return $ ScrollySection (slugify lt) mt
             ) rv
         introSections <- metaToString "intro" meta

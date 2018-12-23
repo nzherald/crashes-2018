@@ -1,18 +1,22 @@
-port module Main exposing (Model, Msg(..), init, main, update, view)
+port module Main exposing (Model, init, main, update, view)
 
 import App.BarChart exposing (..)
 import App.DataTypes exposing (..)
+import App.Msg exposing (..)
 import App.LineChart exposing (..)
 import App.XmasGrid exposing (..)
 import Browser
+import Browser.Events exposing (onResize)
+import Browser.Dom exposing (getViewportOf, Viewport)
 import DateFormat
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
 import Html.Attributes exposing (attribute, class, classList, height, id, src, style, width)
 import Http
 import Json.Decode exposing (Value, decodeValue, list)
 import Json.Encode as E
-import Markdown exposing (toHtml)
+import Markdown exposing (defaultOptions, toHtmlWith)
 import Time exposing (Posix)
+import Task
 
 
 
@@ -28,6 +32,8 @@ type alias Model =
     , activeLabel : Maybe String
     , activeStep : Int
     , small : Bool
+    , width : Float
+    , activeDay : Maybe XmasDay
     }
 
 
@@ -38,26 +44,23 @@ type alias Config =
     , trends : Value
     , hourly : List Xmas
     , small : Bool
+    , width : Float
     }
 
 
 init : Config -> ( Model, Cmd Msg )
-init { article, nym, periods, trends, hourly, small } =
+init { article, nym, periods, trends, hourly, small, width } =
     let
         dec v =
             decodeValue (list jsonDecCrash) v
                 |> Result.withDefault []
     in
-    ( Model article (dec nym) (dec periods) (dec trends) hourly Nothing 0 small, Cmd.none )
+    ( Model article (dec nym) (dec periods) (dec trends) hourly Nothing 0 small width Nothing, Cmd.none )
 
 
 
 ---- UPDATE ----
 
-
-type Msg
-    = DataLoad (Result Http.Error Int)
-    | Scroll ( String, Int )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -72,9 +75,20 @@ update msg model =
         Scroll ( si, i ) ->
             ( { model | activeStep = i, activeLabel = Just si }, Cmd.none )
 
+        ShowDay d -> ({ model | activeDay = Just d }, Cmd.none )
+
+        Size _ _ -> (model, Task.attempt RootSize (getViewportOf "root"))
+
+        RootSize (Err _ )-> (model, Cmd.none)
+        RootSize (Ok {viewport}) -> ({model | width = viewport.width}, Cmd.none)
+
 
 
 ---- VIEW ----
+
+
+toHtml =
+    toHtmlWith { defaultOptions | sanitize = False }
 
 
 view : Model -> Html Msg
@@ -102,10 +116,17 @@ view model =
             , div [ class "scroll__text" ]
                 (model |> .article |> .sections |> List.indexedMap step)
             ]
-        , section [ id "outro" ] [
-            div [] (List.map (\s -> toHtml [] s.text) <| .outro <| .article <| model)
-            , xmasGrid 400 1800 model.hourly
-        ]
+        , section [ id "outro" ]
+            [ div [] (List.map (\s -> toHtml [] s.text) <| .outro <| .article <| model)
+            , div
+                [ style "font-family" "Stag Sans"
+                , style "text-align" "center"
+                , style "margin" "10px auto"
+                , style "font-size" "24px"
+                ]
+                [ text "Hourly Fatal and Serious Injury Crashes" ]
+            , xmasGrid model.width 800 2000 model.hourly
+            ]
         ]
 
 
@@ -246,7 +267,7 @@ main =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ scroll Scroll ]
+    Sub.batch [ scroll Scroll, onResize Size ]
 
 
 port scroll : (( String, Int ) -> msg) -> Sub msg
@@ -260,5 +281,3 @@ dayFormat =
 dateFormat : Posix -> String
 dateFormat =
     DateFormat.format [ DateFormat.yearNumberLastTwo ] Time.utc
-
-

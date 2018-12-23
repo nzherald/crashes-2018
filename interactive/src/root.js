@@ -12,6 +12,7 @@ import periods from './crash+xmas_periods.json'
 import trends from './crash+daily_trend.json'
 import hourly from './hourly+xmas.json'
 
+
 function initScrollama(app) {
     // const {default: scrollama} = await import ('scrollama')
     // const {default: Stickyfill} = await import ('stickyfilljs')
@@ -84,10 +85,11 @@ function initScrollama(app) {
 
 class Main {
     constructor () {
-        document.getElementById('root').innerHTML = '<div id="elm"></div>'
+		document.getElementById('root').innerHTML = '<div id="elm"></div>'
+		const { width } =document.getElementById('root').getClientRects()[0] 
         var app = Elm.Main.init({
             node: document.getElementById('elm'),
-            flags: { article, nym, periods, trends, hourly, small: window.innerWidth < 900 }
+            flags: { article, nym, periods, trends, hourly, small: window.innerWidth < 900, width }
           });
         this.fadeOut()
         initScrollama(app)

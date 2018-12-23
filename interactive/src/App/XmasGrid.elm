@@ -1,37 +1,80 @@
 module App.XmasGrid exposing (xmasGrid)
 
 import App.DataTypes exposing (..)
+import App.Msg exposing (..)
 import Color exposing (rgb255)
 import TypedSvg exposing (circle, g, rect, svg, text_)
-import TypedSvg.Attributes exposing (class, fill, fontFamily, stroke, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (cx, cy, fontSize, height, r, width, strokeWidth, x, y)
+import TypedSvg.Attributes
+    exposing
+        ( alignmentBaseline
+        , class
+        , fill
+        , fontFamily
+        , fontSize
+        , fontVariant
+        , stroke
+        , textAnchor
+        , transform
+        , viewBox
+        )
+import TypedSvg.Attributes.InPx exposing (cx, cy, fontSize, height, r, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
-import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
+import TypedSvg.Events exposing (onClick)
+import TypedSvg.Types
+    exposing
+        ( AlignmentBaseline(..)
+        , AnchorAlignment(..)
+        , Fill(..)
+        , FontVariant(..)
+        , Transform(..)
+        )
 
 
 margin =
-    50
+    30
 
 
-xmasGrid : Float -> Float -> List Xmas -> Svg msg
-xmasGrid w h xmases =
+marginTop =
+    70
+
+
+xmasGrid rw w h xmases =
     let
         dayHeight =
-            h / (toFloat <| List.length xmases)
+            (h - marginTop) / (toFloat <| List.length xmases)
 
         dayWidth =
-            (w - (2 * margin)) / 13
+            ((w * 0.5) - (2 * margin)) / 13
 
         hourHeight =
             (dayHeight / 24) * 0.9
 
         xmas i x =
-            g [ transform [ Translate margin (toFloat i * dayHeight) ] ]
-                (List.indexedMap (days i) x.days)
+            g []
+                [ g
+                    [ transform
+                        [ Translate 0 (toFloat i * dayHeight)
+                        ]
+                    ]
+                    [ text_
+                        [ transform
+                            [ Rotate -90 0 0
+                            , Translate (dayHeight * -0.45) 20
+                            ]
+                        , fontSize 16
+                        , fontFamily ["Stag Sans"]
+                        , textAnchor AnchorMiddle
+                        ]
+                        [ text <| String.fromInt x.year ]
+                    ]
+                , g [ transform [ Translate margin (toFloat i * dayHeight) ] ]
+                    (List.indexedMap (days i) x.days)
+                ]
 
         days i j d =
-            g [ transform [ Translate (toFloat j * dayWidth) 0 ] ]
-                (List.map hours d.hours)
+            g [ transform [ Translate (toFloat j * dayWidth) 0 ]
+            , onClick <| ShowDay d ]
+                (rect [fill <| Fill Color.white, width dayWidth, height dayHeight ] [] :: (List.map hours d.hours))
 
         dot base col i =
             circle
@@ -61,5 +104,55 @@ xmasGrid w h xmases =
                     []
                     :: (dotList 0 fatal (rgb255 139 0 0) ++ dotList fatal serious (rgb255 222 63 83))
                 )
+
+        label i ( m, l ) =
+            g [ transform [ Translate (toFloat i * dayWidth + 0.5 * dayWidth + margin) 0 ] ]
+                [ text_ [ y 60, textAnchor AnchorMiddle, fontSize 16 ] [ text l ]
+                , text_ [ y 40, textAnchor AnchorMiddle, fontSize 12, fontVariant FontVariantSmallCaps ] [ text m ]
+                ]
+
+        labels =
+            g []
+                (List.indexedMap label
+                    [ ( "Dec", "24" )
+                    , ( "Dec", "25" )
+                    , ( "Dec", "26" )
+                    , ( "Dec", "27" )
+                    , ( "Dec", "28" )
+                    , ( "Dec", "29" )
+                    , ( "Dec", "30" )
+                    , ( "Dec", "31" )
+                    , ( "Jan", "1" )
+                    , ( "Jan", "2" )
+                    , ( "Jan", "3" )
+                    , ( "Jan", "4" )
+                    , ( "Jan", "5" )
+                    ]
+                )
     in
-    svg [ viewBox 0 0 w h, class [ "xmas-grid" ] ] (List.indexedMap xmas xmases)
+    svg [ viewBox 0 0 w h, class [ "xmas-grid" ] ]
+        [ g []
+            [ labels
+            , text_
+                [ y 10
+                , x (w * 0.34)
+                , textAnchor AnchorEnd
+                , fill <| Fill <| rgb255 131 0 0
+                , fontSize 13
+                , alignmentBaseline AlignmentCentral
+                ]
+                [ text "Fatal crash" ]
+            , circle [ cx (w * 0.36), cy 10, r 5, fill <| Fill <| rgb255 131 0 0 ] []
+            , text_
+                [ y 10
+                , x (w * 0.7)
+                , textAnchor AnchorEnd
+                , fill <| Fill <| rgb255 222 63 83
+                , fontSize 13
+                , alignmentBaseline AlignmentCentral
+                ]
+                [ text "Serious injury crash" ]
+            , circle [ cx (w * 0.72), cy 10, r 5, fill <| Fill <| rgb255 222 63 83 ] []
+            ]
+        , g [ transform [ Translate 0 marginTop ] ] (List.indexedMap xmas xmases)
+        ]

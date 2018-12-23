@@ -106,7 +106,7 @@ xmasGrid w h xmases activeDay =
         dot base col i =
             let rr = (Basics.min (hourHeight * 0.45) ((dayWidth - hourHeight) / 9))
             in circle
-                [ cx (toFloat (base + (i-1)) * (rr * 2.2) + (0.5*hourHeight))
+                [ cx ((toFloat (base + (i-1))) * (rr * 2.2) + (0.5*hourHeight))
                 , cy (hourHeight * 0.5)
                 , r rr
                 , fill <| Fill col

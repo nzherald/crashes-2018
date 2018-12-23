@@ -160,8 +160,10 @@ hourly <- crashes %>%
   mutate(Fatal=coalesce(Fatal,0),Serious=coalesce(Serious,0))
 
 hourly  %>%
+  arrange(day,hour) %>% 
+  mutate(day = format(ymd(day), '%e %B, %Y')) %>%
   select(xmasYear, day, hour, Fatal, Serious) %>%
-  arrange(day,hour) %>% write_csv(here("data/hourly+xmas.csv"), na="")
+  write_csv(here("data/hourly+xmas.csv"), na="")
 
 # Christmas hourly for all Christmas
 

@@ -7,6 +7,6 @@ import Http
 type Msg
     = DataLoad (Result Http.Error Int)
     | Scroll ( String, Int )
-    | ShowDay XmasDay
+    | ShowDay (Int, XmasDay)
     | Size Int Int
     | RootSize (Result Dom.Error Dom.Viewport)

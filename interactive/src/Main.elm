@@ -2,12 +2,12 @@ port module Main exposing (Model, init, main, update, view)
 
 import App.BarChart exposing (..)
 import App.DataTypes exposing (..)
-import App.Msg exposing (..)
 import App.LineChart exposing (..)
+import App.Msg exposing (..)
 import App.XmasGrid exposing (..)
 import Browser
+import Browser.Dom exposing (Viewport, getViewportOf)
 import Browser.Events exposing (onResize)
-import Browser.Dom exposing (getViewportOf, Viewport)
 import DateFormat
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
 import Html.Attributes exposing (attribute, class, classList, height, id, src, style, width)
@@ -15,8 +15,8 @@ import Http
 import Json.Decode exposing (Value, decodeValue, list)
 import Json.Encode as E
 import Markdown exposing (defaultOptions, toHtmlWith)
-import Time exposing (Posix)
 import Task
+import Time exposing (Posix)
 
 
 
@@ -33,7 +33,7 @@ type alias Model =
     , activeStep : Int
     , small : Bool
     , width : Float
-    , activeDay : Maybe XmasDay
+    , activeDay : Maybe (Int, XmasDay)
     }
 
 
@@ -62,7 +62,6 @@ init { article, nym, periods, trends, hourly, small, width } =
 ---- UPDATE ----
 
 
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -75,12 +74,17 @@ update msg model =
         Scroll ( si, i ) ->
             ( { model | activeStep = i, activeLabel = Just si }, Cmd.none )
 
-        ShowDay d -> ({ model | activeDay = Just d }, Cmd.none )
+        ShowDay d ->
+            ( { model | activeDay = Just d }, Cmd.none )
 
-        Size _ _ -> (model, Task.attempt RootSize (getViewportOf "root"))
+        Size _ _ ->
+            ( model, Task.attempt RootSize (getViewportOf "root") )
 
-        RootSize (Err _ )-> (model, Cmd.none)
-        RootSize (Ok {viewport}) -> ({model | width = viewport.width}, Cmd.none)
+        RootSize (Err _) ->
+            ( model, Cmd.none )
+
+        RootSize (Ok { viewport }) ->
+            ( { model | width = viewport.width }, Cmd.none )
 
 
 
@@ -125,7 +129,7 @@ view model =
                 , style "font-size" "24px"
                 ]
                 [ text "Hourly Fatal and Serious Injury Crashes" ]
-            , xmasGrid model.width 800 2000 model.hourly
+            , xmasGrid model.width model.width 2000 model.hourly model.activeDay
             ]
         ]
 

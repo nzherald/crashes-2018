@@ -32,14 +32,14 @@ hb =
 
 
 hs : Float
-hs = 200
+hs = 180
 
 
 padding small = if small then paddingSmall else paddingBig
 
 paddingSmall : Float
 paddingSmall =
-    20
+    28
 
 paddingBig : Float
 paddingBig =

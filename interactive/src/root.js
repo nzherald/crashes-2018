@@ -37,7 +37,8 @@ function initScrollama(app) {
 			var textWidth = text.offsetWidth;
 			var graphicWidth = bodyWidth - textWidth;
             graphic.style['width'] = small ? "100%" : graphicWidth + 'px'
-            graphic.style['height'] = window.innerHeight + 'px'
+            graphic.style['height'] = (window.innerHeight - 60) + 'px'
+            graphic.style['top'] = "60px"
 			var chartMargin = 32;
 			var chartWidth = graphic.offsetWidth - chartMargin;
 			chart.style['width'] = small ? "100%" : chartWidth + 'px'

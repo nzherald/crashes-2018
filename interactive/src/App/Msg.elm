@@ -5,9 +5,9 @@ import Browser.Dom as Dom
 import Http
 
 type Msg
-    = DataLoad (Result Http.Error Int)
-    | Scroll ( String, Int )
+    = Scroll ( String, Int )
     | ShowDay (Int, XmasDay)
     | Size Int Int
     | RootSize (Result Dom.Error Dom.Viewport)
     | CloseDetail
+    | DataLoad (Result Http.Error (List Xmas))

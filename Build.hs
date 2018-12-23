@@ -98,6 +98,7 @@ main = do
                    , "interactive" </> "src" </> "crash+xmas_periods.json"
                    , "interactive" </> "src" </> "crash+daily_trend.json"
                    , "interactive" </> "src" </> "hourly+xmas.json"
+                   , "interactive" </> "static" </> "hourly+xmas.json"
                    , "data" </> "hourly+allxmas.json"
                    , generatedElm
                    , webpackCli
@@ -127,6 +128,7 @@ main = do
                         Left  csv -> []
                 BL.writeFile out $ encode (ll :: [Crash])
         "interactive/src/hourly+*.json" %> hourlyJson
+        "interactive/static/hourly+*.json" %> hourlyJson
         "data/hourly+*.json" %> hourlyJson
   where
     hourlyJson out = do

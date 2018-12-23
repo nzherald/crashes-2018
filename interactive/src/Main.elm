@@ -33,7 +33,7 @@ type alias Model =
     , activeStep : Int
     , small : Bool
     , width : Float
-    , activeDay : Maybe (Int, XmasDay)
+    , activeDay : Maybe ( Int, XmasDay )
     }
 
 
@@ -42,20 +42,19 @@ type alias Config =
     , nym : Value
     , periods : Value
     , trends : Value
-    , hourly : List Xmas
     , small : Bool
     , width : Float
     }
 
 
 init : Config -> ( Model, Cmd Msg )
-init { article, nym, periods, trends, hourly, small, width } =
+init { article, nym, periods, trends, small, width } =
     let
         dec v =
             decodeValue (list jsonDecCrash) v
                 |> Result.withDefault []
     in
-    ( Model article (dec nym) (dec periods) (dec trends) hourly Nothing 0 small width Nothing, Cmd.none )
+    ( Model article (dec nym) (dec periods) (dec trends) [] Nothing 0 small width Nothing, getData )
 
 
 
@@ -65,12 +64,6 @@ init { article, nym, periods, trends, hourly, small, width } =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DataLoad (Err e) ->
-            ( model, Cmd.none )
-
-        DataLoad (Ok f) ->
-            ( model, Cmd.none )
-
         Scroll ( si, i ) ->
             ( { model | activeStep = i, activeLabel = Just si }, Cmd.none )
 
@@ -86,7 +79,14 @@ update msg model =
         RootSize (Ok { viewport }) ->
             ( { model | width = viewport.width }, Cmd.none )
 
-        CloseDetail -> ({model|activeDay=Nothing}, Cmd.none)
+        CloseDetail ->
+            ( { model | activeDay = Nothing }, Cmd.none )
+
+        DataLoad (Err e) ->
+            ( model, Cmd.none )
+
+        DataLoad (Ok f) ->
+            ( { model | hourly = f }, Cmd.none )
 
 
 
@@ -287,3 +287,8 @@ dayFormat =
 dateFormat : Posix -> String
 dateFormat =
     DateFormat.format [ DateFormat.yearNumberLastTwo ] Time.utc
+
+
+getData : Cmd Msg
+getData =
+    Http.send DataLoad (Http.get "https://insights.nzherald.co.nz/apps/2018/crashes-2018/hourly+xmas.json" (Json.Decode.list jsonDecXmas))

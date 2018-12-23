@@ -10,7 +10,6 @@ import article from './article.json'
 import nym from './crash+nym_yearly.json'
 import periods from './crash+xmas_periods.json'
 import trends from './crash+daily_trend.json'
-import hourly from './hourly+xmas.json'
 
 
 function initScrollama(app) {
@@ -89,7 +88,7 @@ class Main {
 		const { width } =document.getElementById('root').getClientRects()[0] 
         var app = Elm.Main.init({
             node: document.getElementById('elm'),
-            flags: { article, nym, periods, trends, hourly, small: window.innerWidth < 900, width }
+            flags: { article, nym, periods, trends, small: window.innerWidth < 900, width }
           });
         this.fadeOut()
         initScrollama(app)

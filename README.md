@@ -1,11 +1,10 @@
 # Crashes 2018
 
 This is the data, analysis, and source code for the interactive
-[Out most fatal morning](https://insights.nzherald.co.nz/article/crashes-2018/)
+[Our most fatal morning](https://insights.nzherald.co.nz/article/crashes-2018/)
 
-This code has been made public pretty much as is once the article has been published.
-
-We (the _New Zealand Herald_ data journalism team) are trying out the approach of just
+_caveat_ This code has been made public as is after the article publication. We 
+(the _New Zealand Herald_ data journalism team) are trying out the approach of just
 releasing data, analysis, and source code once an article is published - rather than
 planning to tidy up the code and then releasing it. Hopefully this is helpful and makes
 our reporting more transparent. If you would like something to be better documented

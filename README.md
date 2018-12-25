@@ -1,83 +1,77 @@
-# Template
-Basic template for setting up a new story
+# Crashes 2018
 
-## Setup a new project
+This is the data, analysis, and source code for the interactive
+[Out most fatal morning](https://insights.nzherald.co.nz/article/crashes-2018/)
 
-- Install `degit` once
+This code has been made public pretty much as is once the article has been published.
 
-```
-npm install -g degit
-```
+We (the _New Zealand Herald_ data journalism team) are trying out the apporach of just
+releasing data, analysis, and source code once an article is published - rather than
+planning to tidy up the code and then releasing it. Hopefully this is helpful and makes
+our reporting more transparent. If you would like something to be better documented
+please contact me (Chris) on twitter (@vizowl) or by email chris.knox@nzherald.co.nz
 
-There are several branches in this project that contain similar versions the
-template with for different frameworks
+# License
 
-### Minimal template
+The data, analysis, and visualisations are released under a Creative Commons attribution license
+[CC BY 4](https://creativecommons.org/licenses/by/4.0/). You can use it, but please
+attribute the _New Zealand Herald_ and we would prefer it if you got in touch and let us know
+how you are using it.
 
-`degit nzherald/template`
-
-### Batteries included template
-
-This template pulls in d3, d3-jetpack, jquery & lodash. It uses a class
-based template for components.
-
-`degit nzherald/template#batteries-included`
-
-### Svelte template
-
-`degit nzherald/template#svelte`
+The data was released to the _New Zealand Herald_ by _NZTA_ under the Official Information
+Act, and the original data file is `data/crashes by severity and hour.csv` - data released
+under OIA generally has no explicit license so is treated as falling under the general
+[NZGOAL Framework](https://www.ict.govt.nz/guidance-and-resources/open-government/new-zealand-government-open-access-and-licensing-nzgoal-framework/)
 
 
-## Installation
-Webpack dev server should be ready to go as soon as packages are installed.
-```
-npm install
-npm start
-```
+# General approach
+
+The source code is broken into 4 directories, data, analysis, preparation, and interactive.
+
+Haskell's [shake](http://hackage.haskell.org/package/shake) build system is used to marshal
+all the data into a database. The analysis directory is where open ended analysis is carried out. These analysis
+scripts are often not complete - but show some of the directions looked at. The build process
+converts data into (usually JSON) and drops it into the interactive directory.
+
+All the data build products are checked into git so that it is not necessary to have to run the
+haskell, R, and PostgreSQL portions.
+
+The actual interactive is an [Elm](http://elm-lang.org/) app. 
+
+There are a lot of reasons for working in Haskell and Elm - which I won't document here -
+but the primary motivation is to be confident in the struture of all the data we have marshaled - both now
+and in a year when we revisit this article.
 
 
-## Run modes
-```
-npm run [option]
-```
-**start**: Runs dev server with barebone template; thick templates are available on /thick.html and /iframe.html
-**build**: Builds bundle files locally but does not deploy
-**analyse**: Builds and runs bundle-analysis tools
-**deploy**: Builds and pushes bundle files to http://s3.newsapps.nz/dev/[project name]/
-**release**: Builds and pushes bundle files to homepage specified in package.json
+# Building the code
 
+This article uses a lot of tools so getting it running may be frustrating - and it may
+not be possible on a Windows computer.
 
-## Insight component
-1. Create a new branch
-```
-git pull
-git checkout -b article/[project name]
-git push --set-upstream origin article/[project name]
-```
+## Prerequisites
 
-2. Create a new article
-```
-insights new
-```
+__The build will drop a local PostgreSQL database called 'crashes-18' so DO NOT run it if this will cause you problems__
 
-3. Link index.md to build files
-```
-<div id='root'></div>
-<script src='//localhost:8080/embed.js'></script>
-```
+- [Haskell stack](https://docs.haskellstack.org/en/stable/README/)
+- [R](https://www.r-project.org/)
+- [Node](https://nodejs.org/en/)
+- [PostgreSQL](https://www.postgresql.org/)
 
-4. When ready, link index.md to live resources.
-```
-<link rel='stylesheet' href='https://insights.nzherald.co.nz/apps/2018/[project name]/embed.css' />
-<div id='root'></div>
-<script src='https://insights.nzherald.co.nz/apps/2018/[project name]/embed.js'></script>
+R will need to have the following libraries installed.
+
+```r
+library(tidyverse)
+library(ggthemes)
+library(RPostgreSQL)
+library(zoo)
+library(lubridate)
+library(here)
+library(knitr)
+library(stats)
 ```
 
-5. Publish
-```
-insights publish dev
-```
+You will need to run the build as a user that can access a PostreSQL server without
+a password and create new databases.
 
-
-## Todo
-Source mapping (https://webpack.js.org/guides/production/#source-mapping)
+Then just run `stack build --exec build` and this should create the database _crashes-18_ and
+prepare all the data and produce an interactive in `interactive/dist`

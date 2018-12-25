@@ -22,6 +22,7 @@ import TypedSvg.Attributes
         , textAnchor
         , transform
         , viewBox
+        , style
         )
 import TypedSvg.Attributes.InPx exposing (cx, cy, fontSize, height, r, strokeWidth, width, x, y)
 import TypedSvg.Core exposing (Svg, text)
@@ -275,6 +276,7 @@ xmasGrid w h xmases activeDay =
                                 ]
                             , svg
                                 [ viewBox 0 0 (11.5 * dayWidth) (dayHeight * 3.1)
+                                , style ("height: " ++ String.fromFloat (dayHeight*3.1) ++ "px;")
                                 ]
                                 [ g
                                     []
@@ -295,7 +297,7 @@ xmasGrid w h xmases activeDay =
         [ A.style "position" "relative"
         , A.style "overflow" "visible"
         ]
-        [ svg [ viewBox 0 0 w h, class [ "xmas-grid" ] ]
+        [ svg [ viewBox 0 0 w h, class [ "xmas-grid" ], style ("height: " ++ String.fromFloat h ++ "px;") ]
             [ g []
                 [ labels
                 , text_

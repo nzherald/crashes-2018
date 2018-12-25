@@ -4,17 +4,17 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9e8aee50292190e8db0c95e649e7014173b8bac772f7eb073b9771b14b625c99
+-- hash: 636e7ffa9adb5b4552ef75058031ce224d3b918678035663729cec10d3e0093f
 
 name:           preparation
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/nzherald/template#readme>
+description:    Please see the README on GitHub at <https://github.com/nzherald/crashes-2018#readme>
 homepage:       https://github.com/nzherald/template#readme
 bug-reports:    https://github.com/nzherald/template/issues
 author:         New Zealand Herald
 maintainer:     chris.knox@nzherald.co.nz
 copyright:      2018 New Zealand Herald
-license:        AllRightsReserved
+license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:

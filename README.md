@@ -5,7 +5,7 @@ This is the data, analysis, and source code for the interactive
 
 This code has been made public pretty much as is once the article has been published.
 
-We (the _New Zealand Herald_ data journalism team) are trying out the apporach of just
+We (the _New Zealand Herald_ data journalism team) are trying out the approach of just
 releasing data, analysis, and source code once an article is published - rather than
 planning to tidy up the code and then releasing it. Hopefully this is helpful and makes
 our reporting more transparent. If you would like something to be better documented
@@ -13,10 +13,15 @@ please contact me (Chris) on twitter (@vizowl) or by email chris.knox@nzherald.c
 
 # License
 
-The data, analysis, and visualisations are released under a Creative Commons attribution license
-[CC BY 4](https://creativecommons.org/licenses/by/4.0/). You can use it, but please
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+The data, analysis, and visualisations are released under a Creative Commons 
+Attribution-NonCommercial-ShareAlike license
+[CC BY-NC-SA 4](https://creativecommons.org/licenses/by-nc-sa/4.0/). You can use it, but please
 attribute the _New Zealand Herald_ and we would prefer it if you got in touch and let us know
 how you are using it.
+
+The data analysis and processing code is MIT licensed.
 
 The data was released to the _New Zealand Herald_ by _NZTA_ under the Official Information
 Act, and the original data file is `data/crashes by severity and hour.csv` - data released
@@ -39,7 +44,7 @@ haskell, R, and PostgreSQL portions.
 The actual interactive is an [Elm](http://elm-lang.org/) app. 
 
 There are a lot of reasons for working in Haskell and Elm - which I won't document here -
-but the primary motivation is to be confident in the struture of all the data we have marshaled - both now
+but the primary motivation is to be confident in the structure of all the data we have marshaled - both now
 and in a year when we revisit this article.
 
 

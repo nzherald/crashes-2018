@@ -1,7 +1,7 @@
 name:                preparation
 version:             0.1.0.0
 github:              "nzherald/template"
-license:             AllRightsReserved
+license:             "MIT" 
 author:              "New Zealand Herald"
 maintainer:          "chris.knox@nzherald.co.nz"
 copyright:           "2018 New Zealand Herald"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/nzherald/template#readme>
+description:         Please see the README on GitHub at <https://github.com/nzherald/crashes-2018#readme>
 
 dependencies:
 - base >= 4.7 && < 5

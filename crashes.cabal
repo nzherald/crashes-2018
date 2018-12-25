@@ -3,7 +3,7 @@ version:             0.1.0.0
 -- synopsis:
 -- description:
 homepage:            https://github.com/nzherald/crashes-2018#readme
-license:             AllRightsReserved
+license:             MIT
 author:              New Zealand Herald
 maintainer:          chris.knox@nzherald.co.nz
 copyright:           2018 New Zealand Herald

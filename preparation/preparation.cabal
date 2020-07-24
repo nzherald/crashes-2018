@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 636e7ffa9adb5b4552ef75058031ce224d3b918678035663729cec10d3e0093f
+-- hash: 82cadce804f1a4f791e603390a43f69504b29d5430fd4ddc4cf980977f13cee9
 
 name:           preparation
 version:        0.1.0.0
@@ -51,37 +51,6 @@ library
     , pandoc-types
     , parser-combinators
     , postgresql-simple
-    , random
-    , svg-builder
-    , text
-    , time
-    , vector
-  default-language: Haskell2010
-
-executable preparation-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_preparation
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.7 && <5
-    , bytestring
-    , cassava
-    , elm-bridge
-    , formatting
-    , interpolate
-    , lens
-    , lens-aeson
-    , megaparsec
-    , mono-traversable
-    , pandoc
-    , pandoc-types
-    , parser-combinators
-    , postgresql-simple
-    , preparation
     , random
     , svg-builder
     , text

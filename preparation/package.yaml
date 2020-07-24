@@ -45,18 +45,6 @@ dependencies:
 library:
   source-dirs: src
 
-executables:
-  preparation-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - preparation
-
-
 tests:
   preparation-test:
     main:                Spec.hs

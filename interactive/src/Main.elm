@@ -6,7 +6,7 @@ import App.LineChart exposing (..)
 import App.Msg exposing (..)
 import App.XmasGrid exposing (..)
 import Browser
-import Browser.Dom exposing (Viewport, getViewportOf)
+import Browser.Dom exposing (getViewportOf)
 import Browser.Events exposing (onResize)
 import DateFormat
 import Html exposing (Html, div, h1, iframe, img, p, section, text)
